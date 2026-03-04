@@ -43,7 +43,10 @@ def file_meta(path):
     if not os.path.exists(path):
         return None
     stat = os.stat(path)
-    created = datetime.datetime.fromtimestamp(stat.st_birthtime)
+    try:
+        created = datetime.datetime.fromtimestamp(stat.st_birthtime)
+    except AttributeError:
+        created = datetime.datetime.fromtimestamp(stat.st_ctime)
     modified = datetime.datetime.fromtimestamp(stat.st_mtime)
     delta = modified - created
     hours, remainder = divmod(int(delta.total_seconds()), 3600)

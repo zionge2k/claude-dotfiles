@@ -13,7 +13,8 @@
 5. [플러그인 스킬 (Plugin Skills)](#5-플러그인-스킬-plugin-skills)
 6. [훅 (Hooks)](#6-훅-hooks)
 7. [키바인딩 (Keybindings)](#7-키바인딩-keybindings)
-8. [환경변수 및 설정 레퍼런스](#8-환경변수-및-설정-레퍼런스)
+8. [CLAUDE.md 규칙 레퍼런스](#8-claudemd-규칙-레퍼런스)
+9. [환경변수 및 설정 레퍼런스](#9-환경변수-및-설정-레퍼런스)
 
 ---
 
@@ -531,7 +532,62 @@
 
 ---
 
-## 8. 환경변수 및 설정 레퍼런스
+## 8. CLAUDE.md 규칙 레퍼런스
+
+CLAUDE.md에 정의된 주요 규칙과 가이드라인입니다. Claude Code 세션 시작 시 자동으로 적용됩니다.
+
+### 코드 조사 (Code Investigation)
+
+| 규칙 | 설명 |
+|------|------|
+| `investigate_before_answering` | 코드를 열어보지 않고 추측 금지. 파일을 먼저 읽고 답변 |
+| `root_cause_analysis` | 증상 패치(symptom patching) 금지. 근본 원인(root cause)을 추적한 후 수정. 시니어 개발자 기준 적용 |
+
+### 품질 관리 (Quality Control)
+
+| 규칙 | 설명 |
+|------|------|
+| `avoid_overengineering` | 요청된 것만 구현. 불필요한 기능/리팩토링/추상화 금지 |
+| `avoid_hardcoding_for_tests` | 테스트 케이스에 맞춘 하드코딩 금지. 범용 알고리즘 구현 |
+| `reduce_file_creation` | 임시 파일 생성 시 작업 완료 후 삭제 |
+| `elegance_check` | 50줄 이상 변경 또는 새 추상화(abstraction) 도입 시, "더 우아한 방법이 있는가?" 자문 후 진행. 단순한 수정은 스킵 |
+
+### 장기 실행 태스크 (Long-running Tasks)
+
+| 규칙 | 설명 |
+|------|------|
+| `context_persistence` | 컨텍스트 한계와 무관하게 작업 완료. ~80% 활용 시 anchored iterative summarization 적용 (Session Intent / Files Modified / Decisions Made / Current State / Next Steps) |
+| `state_management` | 구조화 정보는 JSON, 자유 형식은 progress.txt, 이력 추적은 git 사용 |
+| `output_offloading` | 2KB 초과 도구 출력(tool output)은 파일로 저장 후 경로+요약만 반환. `.claude/scratch/` 또는 `/tmp/` 사용, 세션 종료 시 정리 |
+| `context_health` | 장기 세션 중 성능 저하 신호(degradation signal) 모니터링: Poisoning (도구 오정렬, 반복 실수) → 컨텍스트 절단 / Distraction (무관한 검색 결과) → 필터링 강화 / Confusion (무관한 작업 혼합) → 서브에이전트 격리 |
+
+### 협업 패턴 (Collaboration Patterns)
+
+| 규칙 | 설명 |
+|------|------|
+| `active_partner` | 묵묵히 따르지 않기. 불명확한 지시에 반박, 잘못된 가정에 도전 |
+| `check_alignment_first` | 구현 전 이해도 확인. 5분 정렬(alignment)이 1시간 잘못된 코딩보다 효율적 |
+| `noise_cancellation` | 간결하게. 불필요한 반복/설명/서두 제거. 지식 문서 정기 압축 |
+| `offload_deterministic` | AI에게 결정적(deterministic) 작업 직접 시키지 않기. 카운팅, 파싱 등은 스크립트 작성하여 실행 |
+
+### 작업 완료 검증 (Verification)
+
+작업 완료 전 체크리스트:
+
+```
+- [ ] 모든 테스트 통과
+- [ ] Plan/todo 문서에 완료 상태 반영
+- [ ] main과의 diff 동작 확인
+- [ ] "스태프 엔지니어가 승인할까?" 자문
+- [ ] 폴더별 INDEX.md 업데이트 (resume point, status)
+- [ ] 글로벌 INDEX.md 상태 업데이트 (해당 시)
+- [ ] 다음 세션을 위한 컨텍스트 기록
+- [ ] Git worktree 격리 확인 (해당 시)
+```
+
+---
+
+## 9. 환경변수 및 설정 레퍼런스
 
 ### 환경변수
 

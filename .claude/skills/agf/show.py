@@ -20,10 +20,10 @@ def main():
                 matches.append(os.path.join(dirpath, f))
 
     if not matches:
-        print("ERROR: NO_MATCH")
+        print(f"ERROR: 해당 prefix '{prefix}'로 시작하는 세션을 찾을 수 없습니다.")
         raise SystemExit(1)
     if len(matches) > 1:
-        print("ERROR: MULTI_MATCH")
+        print(f"ERROR: 해당 prefix '{prefix}'로 시작하는 세션이 {len(matches)}개 있습니다. 더 긴 prefix를 입력해주세요:")
         for m in matches:
             sid = os.path.basename(m).replace(".jsonl", "")
             proj_dir = os.path.basename(os.path.dirname(m))

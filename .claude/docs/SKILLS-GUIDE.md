@@ -13,7 +13,7 @@
 5. [플러그인 스킬 (Plugin Skills)](#5-플러그인-스킬-plugin-skills)
 6. [훅 (Hooks)](#6-훅-hooks)
 7. [키바인딩 (Keybindings)](#7-키바인딩-keybindings)
-8. [환경변수 레퍼런스](#8-환경변수-레퍼런스)
+8. [환경변수 및 설정 레퍼런스](#8-환경변수-및-설정-레퍼런스)
 
 ---
 
@@ -59,37 +59,65 @@
 
 스킬은 Claude Code가 **자동으로 감지하여 적용**하는 전문 지식 모듈입니다. 별도 호출 없이 관련 키워드를 언급하면 활성화됩니다.
 
-### 일상 생산성
+### 직접 만든 스킬 (dotfiles 포함, 9개)
+
+#### 일상 생산성
 
 | 스킬 | 트리거 키워드 | 설명 |
 |------|-------------|------|
-| `daily-work-logger` | "어제 작업 정리해줘", "daily log" | 5개 서브에이전트(haiku)가 병렬로 어제 활동 분석 후 Daily Note 자동 반영 |
+| `daily-work-logger` | "어제 작업 정리해줘", "daily log" | 4개 서브에이전트(haiku)가 병렬로 어제 활동 분석 후 Daily Note 자동 반영 (Vault Files / CC Sessions / Meeting Notes / Learning Extractor) |
 | `weekly-claude-analytics` | "주간 분석", "Claude 사용 통계" | 주간 세션 로그 분석 → 프로젝트별 시간/작업유형/Jira 이슈 리포트 |
 | `weekly-newsletter` | "뉴스레터 만들어줘" | 이번 주 작성/수정 글을 모아 뉴스레터 생성 |
 | `project-time-tracker` | "시간 추적", "time tracking" | 프로젝트별 Claude 세션 시간 집계 리포트 |
 | `usage-pattern-analyzer` | "패턴 분석", "사용 통계" | 도구 사용 빈도/시간대별 생산성 시각화 |
 | `learning-tracker` | "학습 정리", "TIL", "오늘 배운 것" | 세션에서 학습 내용 추출 → TIL 문서 생성 |
-| `backlog-md` | Backlog.md CLI 사용 시 | 태스크 생성/편집/상태 관리 가이드 |
-| `brunch-writer` | "브런치", "글 작성" | 브런치 블로그 글 작성 지원 |
+| `brunch-writer` | "브런치", "글 작성", "블로그 글" | 브런치 블로그 글 작성 지원 (vault-intelligence로 관련 자료 검색, 구조 제안, 스타일 체크) |
 
-### 개발 도구
+#### Obsidian 지식관리
+
+| 스킬 | 트리거 키워드 | 설명 |
+|------|-------------|------|
+| `obsidian-vault` | Obsidian, vault, 마크다운, 태그, 백링크, wiki-link, PKM | markdown-oxide LSP 연동, 태그 체계, 토큰 최적화 전략 |
+| `vis` | vault 검색, 문서 정리, 태그, MOC, 관련 문서, 주제 수집, 중복 검사, 학습 리뷰, 지식 공백, 클러스터링, 인덱싱, 태그 통계 | Vault Intelligence System CLI — 19개 명령어 지원 (아래 표 참조) |
+
+#### vis 명령어 전체 목록
+
+| 명령어 | 사용자 의도 | 예시 요청 |
+|--------|-----------|----------|
+| `vis search` | 문서 검색 (hybrid/semantic/keyword/colbert) | "TDD 관련 문서 찾아줘" |
+| `vis collect` | 주제별 문서 수집 | "클린코드 문서 모아줘" |
+| `vis related` | 관련 문서 찾기 | "이 문서와 비슷한 거 찾아줘" |
+| `vis generate-moc` | MOC(Maps of Content) 생성 | "TDD MOC 만들어줘" |
+| `vis tag` | 자동 태깅 | "이 문서에 태그 달아줘" |
+| `vis add-related-docs` | 관련 문서 섹션 추가 | "관련 문서 링크 넣어줘" |
+| `vis analyze-gaps` | 지식 공백 분석 | "vault에 부족한 주제 찾아줘" |
+| `vis duplicates` | 중복 문서 감지 | "중복 문서 있어?" |
+| `vis analyze` | 주제 분석/분포 | "vault 주제 분포 보여줘" |
+| `vis summarize` | 클러스터 요약 | "주제별로 묶어줘" |
+| `vis review` | 학습 리뷰 | "이번 주 학습 정리해줘" |
+| `vis clean-tags` | 고립 태그 정리 | "안 쓰는 태그 정리해줘" |
+| `vis reindex` | 인덱스 갱신 | "인덱스 다시 만들어줘" |
+| `vis list-tags` | 태그 목록/통계 | "태그 분포 보여줘" |
+| `vis connect-topic` | 주제별 문서 연결 | "TDD 주제 문서 연결해줘" |
+| `vis connect-status` | 연결 진행 상황 | "연결 작업 얼마나 됐어?" |
+| `vis info` | 시스템 상태 확인 | "vis 상태 어때?" |
+| `vis init` | 인덱스 초기화 | "vis 새로 셋업해줘" |
+| `vis test` | 검색 품질 테스트 | "검색 잘 되는지 확인해줘" |
+
+### 외부 설치 스킬 (플러그인으로 관리, dotfiles 미포함)
+
+다음 스킬은 `install.sh --plugins-only`로 설치됩니다. dotfiles에는 포함되지 않습니다.
 
 | 스킬 | 트리거 키워드 | 설명 |
 |------|-------------|------|
 | `gh` | GitHub CLI, PR, issue 언급 시 | `gh` 명령어 완전 가이드 (PR/Issue/Release/API) |
-| `gl` | GitLab CLI, MR, pipeline 언급 시 | `glab` 명령어 완전 가이드 (MR/Pipeline/Release) - Issue 미사용 |
+| `gl` | GitLab CLI, MR, pipeline 언급 시 | `glab` 명령어 완전 가이드 (MR/Pipeline/Release) |
 | `jira` | Jira, JQL, 이슈 관리 시 | `jira` CLI 완전 가이드 (JQL 레퍼런스 포함) |
+| `backlog-md` | Backlog.md CLI 사용 시 | 태스크 생성/편집/상태 관리 가이드 |
 | `react-best-practices` | React/Next.js 코드 작성 시 | Vercel 엔지니어링 기반 50개+ React 최적화 규칙 |
 | `pdf-processing-pro` | PDF 처리 작업 시 | OCR, 폼, 테이블, 배치 처리 |
 | `skill-creator` | "스킬 만들어줘" | 새 스킬 생성 메타 가이드 (init/package/validate) |
 | `find-skills` | "이런 스킬 있어?" | 스킬 검색 및 설치 도우미 |
-
-### Obsidian 지식관리
-
-| 스킬 | 트리거 키워드 | 설명 |
-|------|-------------|------|
-| `obsidian-vault` | Obsidian, vault, 마크다운, 태그 | markdown-oxide LSP 연동, 태그 체계, 토큰 최적화 전략 |
-| `vis` | 시맨틱 검색, vault 분석 | Vault Intelligence System CLI (hybrid/semantic/colbert 검색) |
 
 ---
 
@@ -101,17 +129,17 @@
 
 | 커맨드 | 사용법 | 설명 |
 |--------|--------|------|
-| `/commit` | `/commit` | Conventional Commits 자동 생성 (한국어 인코딩 처리, 임시 파일 방식) |
-| `/wrap-up` | `/wrap-up` | 현재 세션 작업 요약 → `cc-logs/` 폴더 저장 |
+| `/commit` | `/commit [--push] [--amend]` | Conventional Commits 자동 생성 (한국어 인코딩 처리, 임시 파일 방식) |
+| `/wrap-up` | `/wrap-up [주제명] [--include-code] [--format markdown\|summary]` | 현재 세션 작업 요약 → `cc-logs/` 폴더 저장 |
 | `/update-claude-md` | `/update-claude-md` | 세션 패턴 분석 후 CLAUDE.md 인터랙티브 업데이트 |
 | `/check-security` | `/check-security [--fix] [--severity high]` | OWASP 기반 보안 취약점 스캔 |
-| `/project-overview` | `/project-overview` | 프로젝트 구조/목적 종합 분석 (온보딩용) |
-| `/conventional-review` | `/conventional-review` | 리뷰 코멘트 → Conventional Comments 형식 변환 |
-| `/my-developer` | `/my-developer` | 개발 계획에 대한 피드백 |
-| `/askUserQuestion` | `/askUserQuestion` | 인터랙티브 코드 어시스턴트 |
-| `/markitdown-convert` | `/markitdown-convert [파일]` | Microsoft MarkItDown으로 파일 → Markdown 변환 |
-| `/meeting-minutes` | `/meeting-minutes` | 회의 녹취록 → 체계적 회의록 마크다운 |
-| `/coffee-time` | `/coffee-time` | 커피타임 대화 정리 → GitHub 자동 저장 |
+| `/project-overview` | `/project-overview [--depth shallow\|deep] [--focus area] [--format summary\|detailed]` | 프로젝트 구조/목적 종합 분석 (온보딩용) |
+| `/conventional-review` | `/conventional-review <review comment>` | 리뷰 코멘트 → Conventional Comments 형식 변환 |
+| `/my-developer` | `/my-developer` | 개발자의 구현 계획에 대한 상세 피드백 (아키텍처 ~ 세부사항) |
+| `/askUserQuestion` | `/askUserQuestion` | AskUserQuestion 도구를 활용한 대화형 요구사항 명확화 어시스턴트 |
+| `/markitdown-convert` | `/markitdown-convert <file_path>` | Microsoft MarkItDown으로 파일 → Markdown 변환 |
+| `/meeting-minutes` | `/meeting-minutes [YYYY-MM-DD] [회의 녹취록]` | 회의 녹취록 → 체계적 회의록 마크다운 |
+| `/coffee-time` | `/coffee-time [YYYY-MM-DD] [대화 내용]` | 커피타임 대화 정리 → GitHub 자동 저장 |
 
 ### Augmented Coding (의사결정 지원)
 
@@ -162,53 +190,55 @@
 
 ### 코드 품질 전문가
 
-| 에이전트 | 호출 | 전문 분야 |
-|---------|------|----------|
-| `kent-beck-expert` | `@kent-beck-expert` | **Tidy First** 방법론, Simple Design 4 규칙, 구조변경→행위변경 분리 |
-| `refactoring-expert` | `@refactoring-expert` | **Martin Fowler 리팩토링 카탈로그**, Code Smell 식별, 안전한 단계별 리팩토링 |
-| `code-refactorer` | `@code-refactorer` | 기능 유지하면서 코드 구조 개선 |
-| `code-review-expert` | `@code-review-expert` | 체계적 코드 리뷰 (보안/성능/Spring-JPA 특화 체크리스트) |
-| `oop-expert` | `@oop-expert` | 객체지향 프로그래밍 원칙 (SOLID, Design Patterns) |
+| 에이전트 | 호출 | 모델 | 전문 분야 |
+|---------|------|------|----------|
+| `kent-beck-expert` | `@kent-beck-expert` | 기본 | **Tidy First** 방법론, Simple Design 4 규칙, 구조변경→행위변경 분리 |
+| `refactoring-expert` | `@refactoring-expert` | 기본 | **Martin Fowler 리팩토링 카탈로그**, Code Smell 식별, 안전한 단계별 리팩토링 |
+| `code-refactorer` | `@code-refactorer` | 기본 | 기능 유지하면서 코드 구조 개선 |
+| `code-review-expert` | `@code-review-expert` | 기본 | 체계적 코드 리뷰 (보안/성능/품질/유지보수성, Spring-JPA 포함) |
+| `ddd-expert` | `@ddd-expert` | 기본 | **Domain-Driven Design** (Bounded Context, Aggregate, Entity/Value Object, Domain Events) + OOP/SOLID 원칙 |
+
+> 참고: `ddd-expert`의 파일명은 `oop-expert.md`이지만, 실제 에이전트 이름은 `ddd-expert`입니다.
 
 ### 개발 전문가
 
-| 에이전트 | 호출 | 전문 분야 |
-|---------|------|----------|
-| `spring-expert` | `@spring-expert` | Spring Boot, Clean/Hexagonal Architecture, JPA, Security |
-| `frontend-designer` | `@frontend-designer` | 프론트엔드 UI/UX 디자인 → 기술 명세 변환 |
-| `vibe-coding-coach` | `@vibe-coding-coach` | 대화 기반 앱 개발 (비전 → 코드 변환) |
-| `data-scientist` | `@data-scientist` | SQL, BigQuery, 데이터 분석 |
-| `prompt-expert` | `@prompt-expert` | 프롬프트 엔지니어링, 프롬프트 최적화 |
+| 에이전트 | 호출 | 모델 | 전문 분야 |
+|---------|------|------|----------|
+| `spring-expert` | `@spring-expert` | 기본 | Spring Boot, Clean/Hexagonal Architecture, JPA, Security |
+| `frontend-designer` | `@frontend-designer` | 기본 | 프론트엔드 UI/UX 디자인 → 기술 명세 변환 |
+| `vibe-coding-coach` | `@vibe-coding-coach` | 기본 | 대화 기반 앱 개발 (비전 → 코드 변환) |
+| `data-scientist` | `@data-scientist` | **haiku** | SQL, BigQuery, 데이터 분석 (경량 모델 — 비용 최적화) |
+| `prompt-expert` | `@prompt-expert` | 기본 | 프롬프트 엔지니어링, 프롬프트 최적화 |
 
 ### 콘텐츠 & 문서
 
-| 에이전트 | 호출 | 전문 분야 |
-|---------|------|----------|
-| `youtube-obsidian-summarizer` | `@youtube-obsidian-summarizer` | YouTube → Obsidian 한글 문서 (opus 모델, 타임스탬프/Zettelkasten 포함) |
-| `youtube-summarizer` | `@youtube-summarizer` | YouTube 영상 요약 |
-| `content-writer` | `@content-writer` | 콘텐츠 작성 (아웃라인 → 풀 아티클) |
-| `content-translator` | `@content-translator` | 기술 콘텐츠 번역 |
-| `technical-researcher` | `@technical-researcher` | GitHub 프로젝트/API/코드 분석 |
+| 에이전트 | 호출 | 모델 | 전문 분야 |
+|---------|------|------|----------|
+| `youtube-obsidian-summarizer` | `@youtube-obsidian-summarizer` | **opus** | YouTube → Obsidian 한글 문서 (고품질, 타임스탬프/Zettelkasten 포함) |
+| `youtube-summarizer` | `@youtube-summarizer` | 기본 | YouTube 영상 요약 |
+| `content-writer` | `@content-writer` | 기본 | 콘텐츠 작성 (아웃라인 → 풀 아티클) |
+| `content-translator` | `@content-translator` | 기본 | 기술 콘텐츠 번역 |
+| `technical-researcher` | `@technical-researcher` | 기본 | GitHub 프로젝트/API/코드 분석 |
 
 ### 프로젝트 관리
 
-| 에이전트 | 호출 | 전문 분야 |
-|---------|------|----------|
-| `prd-expert` | `@prd-expert` | PRD(Product Requirements Document) 작성 |
-| `prd-writer` | `@prd-writer` | PRD 작성 (상세 버전) |
-| `project-task-planner` | `@project-task-planner` | PRD → 개발 태스크 리스트 변환 |
+| 에이전트 | 호출 | 모델 | 전문 분야 |
+|---------|------|------|----------|
+| `prd-expert` | `@prd-expert` | 기본 | PRD(Product Requirements Document) 작성 |
+| `prd-writer` | `@prd-writer` | 기본 | PRD 작성 (상세 버전) |
+| `project-task-planner` | `@project-task-planner` | 기본 | PRD → 개발 태스크 리스트 변환 |
 
 ### Obsidian 지식관리
 
-| 에이전트 | 호출 | 전문 분야 |
-|---------|------|----------|
-| `zettelkasten-expert` | `@zettelkasten-expert` | Zettelkasten 방법론 (INBOX→RESOURCES→SLIPBOX) |
-| **Obsidian Ops Team** (다중 에이전트) | | |
-| `moc-agent` | 자동 | Maps of Content 생성/관리 |
-| `tag-agent` | 자동 | 태그 정규화/계층 구조화 |
-| `connection-agent` | 자동 | 노트 간 연결 관계 분석/제안 |
-| `metadata-agent` | 자동 | 프론트매터 표준화/메타데이터 추가 |
-| `review-agent` | 자동 | 일관성 교차 검증 |
+| 에이전트 | 호출 | 모델 | 전문 분야 |
+|---------|------|------|----------|
+| `zettelkasten-expert` | `@zettelkasten-expert` | 기본 | Zettelkasten 방법론 (INBOX→RESOURCES→SLIPBOX) |
+| **Obsidian Ops Team** (다중 에이전트) | | | |
+| `moc-agent` | 자동 | 기본 | Maps of Content 생성/관리 |
+| `tag-agent` | 자동 | 기본 | 태그 정규화/계층 구조화 |
+| `connection-agent` | 자동 | 기본 | 노트 간 연결 관계 분석/제안 |
+| `metadata-agent` | 자동 | 기본 | 프론트매터 표준화/메타데이터 추가 |
+| `review-agent` | 자동 | 기본 | 일관성 교차 검증 |
 
 ---
 
@@ -233,6 +263,7 @@
 | `verification-before-completion` | `/superpowers:verification-before-completion` | 완료 전 검증 (테스트/빌드 확인) |
 | `finishing-a-development-branch` | `/superpowers:finishing-a-development-branch` | 브랜치 작업 완료 및 통합 가이드 |
 | `writing-skills` | `/superpowers:writing-skills` | 새 스킬 작성/검증 |
+| `using-superpowers` | 자동 (세션 시작 시) | 스킬 사용법 가이드 |
 
 ### Code Review
 
@@ -245,6 +276,12 @@
 | 스킬 | 사용법 | 설명 |
 |------|--------|------|
 | `feature-dev` | `/feature-dev:feature-dev` | 코드베이스 이해 기반 피처 개발 가이드 |
+
+### Code Simplifier
+
+| 스킬 | 사용법 | 설명 |
+|------|--------|------|
+| `simplify` | `/simplify` | 변경된 코드의 재사용성, 품질, 효율성 리뷰 및 개선 |
 
 ### PR Review Toolkit
 
@@ -303,6 +340,51 @@
 |------|--------|------|
 | `playground` | `/playground:playground` | 인터랙티브 HTML 플레이그라운드 생성 |
 
+### Notion
+
+| 스킬 | 사용법 | 설명 |
+|------|--------|------|
+| `find` | `/Notion:find` | 제목 키워드로 페이지/데이터베이스 검색 |
+| `search` | `/Notion:search` | Notion 워크스페이스 전체 검색 |
+| `create-page` | `/Notion:create-page` | 새 Notion 페이지 생성 |
+| `create-task` | `/Notion:create-task` | 태스크 데이터베이스에 새 태스크 생성 |
+| `create-database-row` | `/Notion:create-database-row` | 데이터베이스에 새 행 삽입 |
+| `database-query` | `/Notion:database-query` | 데이터베이스 쿼리 및 구조화된 결과 반환 |
+| `tasks:plan` | `/Notion:tasks:plan` | Notion 페이지 URL에서 태스크 계획 |
+| `tasks:build` | `/Notion:tasks:build` | Notion 페이지 URL에서 태스크 구현 |
+| `tasks:explain-diff` | `/Notion:tasks:explain-diff` | 코드 변경사항을 Notion 문서로 설명 |
+| `tasks:setup` | `/Notion:tasks:setup` | Notion 태스크 보드 설정 |
+
+### msbaek-tdd
+
+| 스킬 | 사용법 | 설명 |
+|------|--------|------|
+| `tdd-rgb` | `/msbaek-tdd:tdd-rgb` | TDD RGB 사이클 진행 (Red/Green/Blue agent 순차 위임) |
+| `tdd` | `/msbaek-tdd:tdd` | TDD 오케스트레이터 — 프로젝트 생성 및 워크플로우 안내 |
+| `tdd-plan` | `/msbaek-tdd:tdd-plan` | TDD Planning — SRS, 예제, 테스트 목록 작성 |
+
+### GitHub
+
+| 스킬 | 사용법 | 설명 |
+|------|--------|------|
+| `gh` | `/gh` | GitHub CLI 작업 시 자동 적용 (PR, issue, release, GitHub 자동화) |
+
+### 출력 스타일
+
+| 플러그인 | 설명 |
+|---------|------|
+| `explanatory-output-style` | 설명형 출력 — 교육적 인사이트와 함께 작업 수행 |
+| `learning-output-style` | 학습형 출력 — 사용자 코드 기여 요청 + 교육적 설명 결합 |
+
+### 기타 플러그인
+
+| 플러그인 | 설명 |
+|---------|------|
+| `security-guidance` | 보안 관련 작업 시 OWASP 기반 가이드라인 적용 |
+| `greptile` | 코드 검색 강화 (코드베이스 인덱싱 기반) |
+| `serena` | LSP 기반 시맨틱 코드 탐색 (MCP 서버) |
+| `playwright` | 브라우저 자동화 (MCP 서버) |
+
 ---
 
 ## 6. 훅 (Hooks)
@@ -311,16 +393,20 @@
 
 | 이벤트 | 트리거 | 동작 |
 |--------|--------|------|
-| **PreToolUse** (`*`) | 모든 도구 실행 시 | terminal-notifier로 macOS 알림 ("도구 실행 준비 중: [도구명]") |
+| **PreToolUse** (`*`) | 모든 도구 실행 시 | 크로스 플랫폼 알림 via `notify.sh` ("도구 실행 준비 중: [도구명]") |
 | **PreToolUse** (`bash`) | Bash 명령 실행 시 | 명령어 + 설명을 `~/.claude/bash-command-log.txt`에 로깅 |
-| **Stop** | 응답 완료 시 | terminal-notifier 알림 ("Claude 응답이 완료되었습니다") |
-| **Notification** (`permission_prompt`) | 권한 요청 시 | "Permission required" 알림 (Ping 사운드) |
-| **Notification** (`idle_prompt`) | 입력 대기 시 | "Waiting for input" 알림 (Pop 사운드) |
-| **UserPromptSubmit** | 프롬프트 제출 시 | `-u` 감지 → ultra-think 모드 자동 활성화 |
+| **Stop** | 응답 완료 시 | 크로스 플랫폼 알림 ("Claude 응답이 완료되었습니다") |
+| **Notification** (`permission_prompt`) | 권한 요청 시 | "Permission required" 알림 |
+| **Notification** (`idle_prompt`) | 입력 대기 시 | "Waiting for input" 알림 |
+| **UserPromptSubmit** | 프롬프트 제출 시 | `-u` 플래그 감지 → ultrathink 사용 지시문 자동 추가 |
+
+> 알림 스크립트(`notify.sh`)가 OS를 자동 감지합니다:
+> - macOS: `terminal-notifier` (기본 사운드) 또는 `osascript` (Ping 사운드)
+> - Linux: `notify-send`
 
 ### Ultra-Think 모드 사용법
 
-프롬프트 끝에 `-u`를 추가하면 확장 사고 모드가 활성화됩니다:
+프롬프트 끝에 `-u`를 추가하면 ultrathink 지시문이 자동 추가됩니다:
 
 ```
 이 코드를 리팩토링해줘 -u
@@ -333,7 +419,7 @@
 | `check-env-files.sh` | `~/.claude/hooks/` | `.env` 파일 커밋 방지 (`.env.*.example` 허용) |
 | `check-sensitive-files.sh` | `~/.claude/hooks/` | `.pem, .key, .p12, .pfx, .jks, .crt, .cer` 파일 차단 |
 | `check-hardcoded-paths.sh` | `~/.claude/hooks/` | 하드코딩된 사용자 경로 방지 (`$HOME` 또는 `~` 사용 강제) |
-| `update-brewfile.sh` | `~/.claude/hooks/` | 커밋 전 Brewfile 자동 동기화 |
+| `update-brewfile.sh` | `~/.claude/hooks/` | 커밋 전 Brewfile 자동 동기화 (macOS) |
 
 ---
 
@@ -348,18 +434,48 @@
 | `meta+t` | Chat | 씽킹(확장 사고) 토글 |
 | `ctrl+s` | Chat | 대화 스태시 (임시 저장) |
 | `ctrl+q` | Chat | 스니펫 피커 |
+| `ctrl+v` | Chat | 이미지 붙여넣기 |
+| `ctrl+g` | Chat | 외부 에디터에서 편집 |
+| `ctrl+_` / `ctrl+shift+-` | Chat | 실행 취소 (undo) |
+| `shift+tab` | Chat | 모드 순환 |
+| `escape` | Chat | 취소 |
 | `ctrl+t` | Global | 투두 리스트 토글 |
 | `ctrl+o` | Global | 트랜스크립트 토글 |
+| `ctrl+shift+o` | Global | 팀메이트 프리뷰 토글 |
 | `ctrl+r` | Global | 히스토리 검색 |
-| `y` / `n` | Confirmation | 빠른 승인/거부 |
-| `j` / `k` | Settings/Select | Vim 스타일 상하 이동 |
-| `/` | Settings | 설정 검색 |
-| `ctrl+e` | Confirmation | 설명 토글 |
-| `ctrl+b` | Task | 태스크 백그라운드 실행 |
-| `space` | Plugin | 플러그인 토글 |
-| `i` | Plugin | 플러그인 설치 |
 
-### DiffDialog 단축키
+### 승인/거부 (Confirmation)
+
+| 키 | 동작 |
+|----|------|
+| `y` / `enter` | 승인 |
+| `n` / `escape` | 거부 |
+| `up` / `down` | 이전/다음 옵션 |
+| `tab` | 다음 필드 |
+| `space` | 토글 |
+| `shift+tab` | 모드 순환 |
+| `ctrl+e` | 설명 토글 |
+
+### 자동완성 (Autocomplete)
+
+| 키 | 동작 |
+|----|------|
+| `tab` | 수락 |
+| `escape` | 닫기 |
+| `up` / `down` | 이전/다음 제안 |
+
+### 설정/선택 (Settings/Select)
+
+| 키 | 동작 |
+|----|------|
+| `j` / `down` / `ctrl+n` | 다음 항목 |
+| `k` / `up` / `ctrl+p` | 이전 항목 |
+| `enter` / `space` | 선택 |
+| `escape` | 취소 |
+| `/` | 설정 검색 |
+| `r` | 재시도 |
+
+### DiffDialog
 
 | 키 | 동작 |
 |----|------|
@@ -368,18 +484,49 @@
 | `enter` | 상세 보기 |
 | `escape` | 닫기 |
 
-### MessageSelector 단축키
+### MessageSelector
 
 | 키 | 동작 |
 |----|------|
 | `j` / `down` | 다음 메시지 |
 | `k` / `up` | 이전 메시지 |
-| `Shift+j` / `Shift+down` | 맨 아래 |
-| `Shift+k` / `Shift+up` | 맨 위 |
+| `shift+j` / `shift+down` / `ctrl+down` / `meta+down` | 맨 아래 |
+| `shift+k` / `shift+up` / `ctrl+up` / `meta+up` | 맨 위 |
+| `enter` | 선택 |
+
+### ModelPicker
+
+| 키 | 동작 |
+|----|------|
+| `left` | Effort 감소 |
+| `right` | Effort 증가 |
+
+### 기타
+
+| 컨텍스트 | 키 | 동작 |
+|---------|---|------|
+| Task | `ctrl+b` | 태스크 백그라운드 실행 |
+| Plugin | `space` | 플러그인 토글 |
+| Plugin | `i` | 플러그인 설치 |
+| Tabs | `tab` / `right` | 다음 탭 |
+| Tabs | `shift+tab` / `left` | 이전 탭 |
+| Transcript | `ctrl+e` | 전체 표시 토글 |
+| Transcript | `escape` | 나가기 |
+| HistorySearch | `ctrl+r` | 다음 결과 |
+| HistorySearch | `tab` / `escape` | 수락 |
+| HistorySearch | `enter` | 실행 |
+| ThemePicker | `ctrl+t` | 구문 강조 토글 |
+| Help | `escape` | 닫기 |
+| Attachments | `left` / `right` | 이전/다음 첨부 |
+| Attachments | `backspace` / `delete` | 첨부 삭제 |
+| Footer | `left` / `right` | 이전/다음 |
+| Footer | `enter` | 선택 열기 |
 
 ---
 
-## 8. 환경변수 레퍼런스
+## 8. 환경변수 및 설정 레퍼런스
+
+### 환경변수
 
 | 변수 | 현재 값 | 설명 |
 |------|--------|------|
@@ -395,34 +542,71 @@
 | `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` | `1` | 작업 디렉토리 유지 |
 | `CLAUDE_CODE_DISABLE_TERMINAL_TITLE` | `1` | 터미널 타이틀 변경 방지 |
 
+### 추가 설정
+
+| 설정 | 현재 값 | 설명 |
+|------|--------|------|
+| `permissions.defaultMode` | `acceptEdits` | 파일 편집 자동 승인 |
+| `effortLevel` | `high` | 기본 추론 노력 수준 |
+| `spinnerVerbs` | 한국어 동사 목록 | 로딩 스피너에 한국어 표시 ("분석 중...", "탐색 중..." 등) |
+
 ---
 
 ## 빠른 참조 카드
 
 ```
 [일상]
-/daily-work-logger        어제 작업 정리
-/wrap-up                  오늘 세션 요약
-/commit                   커밋 생성
-/weekly-claude-analytics  주간 통계
+/daily-work-logger                 어제 작업 정리
+/wrap-up [주제] [--format ...]     오늘 세션 요약
+/commit [--push] [--amend]         커밋 생성
+/weekly-claude-analytics           주간 통계
+/weekly-newsletter                 주간 뉴스레터
 
 [개발]
-/check-security           보안 스캔
-/augmented:cast-wide      대안 탐색
-/augmented:parallel-impl  병렬 구현
-/tdp:add-test-for-*       TDD 테스트 추가
+/check-security                    보안 스캔
+/project-overview [--depth ...]    프로젝트 분석
+/conventional-review <코멘트>       리뷰 코멘트 변환
+/markitdown-convert <파일>          파일→Markdown
+/meeting-minutes [날짜] [녹취록]    회의록 생성
+/coffee-time [날짜] [내용]          커피타임 정리
+
+[Augmented Coding]
+/augmented:cast-wide               대안 탐색
+/augmented:parallel-impl           병렬 구현
+/augmented:happy-to-delete         코드 폐기
+/augmented:softest-prototype       마크다운 프로토타입
+/augmented:mind-dump               사고 구조화
+/augmented:reverse-direction       AI에게 질문 위임
+/augmented:refinement-loop         반복 품질 개선
+
+[TDD]
+/tdp:add-test-for-boundary-values  경계값 테스트
+/tdp:add-test-for-change-later     변경 대비 테스트
+/tdp:add-test-for-misbehaves       오작동 테스트
+/tdp:add-test-for-side-effects     부작용 테스트
+/msbaek-tdd:tdd-rgb                TDD RGB 사이클
+/msbaek-tdd:tdd-plan               TDD 계획
 
 [Obsidian]
 /obsidian:summarize-youtube [kr|en] [URL]
 /obsidian:summarize-article [URL]
+/obsidian:translate-youtube [URL]
+/obsidian:translate-article [URL]
 /obsidian:add-tag [파일]
 /obsidian:vault-query [질문]
+/obsidian:batch-process
+vis search "키워드" [--rerank]
+vis collect "주제" [--tag]
+vis generate-moc "주제"
 
 [에이전트]
 @spring-expert            Spring 질문
 @code-review-expert       코드 리뷰
 @kent-beck-expert         Tidy First
 @refactoring-expert       리팩토링
+@ddd-expert               DDD/OOP 설계
+@data-scientist           데이터 분석 (haiku)
+@youtube-obsidian-summarizer  YouTube 요약 (opus)
 
 [GitLab (glab)]
 glab mr create --fill           MR 생성
@@ -432,17 +616,29 @@ glab ci trace                   Job 로그 확인
 glab mr merge --squash          스쿼시 머지
 
 [Superpowers]
+/superpowers:brainstorming            아이디어 탐색
 /superpowers:test-driven-development  TDD
 /superpowers:systematic-debugging     디버깅
-/superpowers:brainstorming            아이디어
+/superpowers:writing-plans            계획 작성
+/superpowers:executing-plans          계획 실행
 
 [Atlassian]
 /atlassian:triage-issue               이슈 트리아지
 /atlassian:spec-to-backlog            스펙→백로그
+/atlassian:generate-status-report     상태 리포트
+
+[Notion]
+/Notion:search                        워크스페이스 검색
+/Notion:create-task                   태스크 생성
+/Notion:tasks:plan                    태스크 계획
+/Notion:tasks:build                   태스크 구현
 
 [키보드]
 meta+p  모델 선택    meta+o  패스트모드
 meta+t  씽킹 토글   ctrl+s  스태시
+ctrl+q  스니펫      ctrl+v  이미지 붙여넣기
+ctrl+g  외부 에디터  ctrl+t  투두 토글
+ctrl+o  트랜스크립트  ctrl+r  히스토리 검색
 y/n     승인/거부    j/k     Vim 이동
--u      울트라씽크   ctrl+t  투두 토글
+-u      울트라씽크   ctrl+b  백그라운드
 ```

@@ -1,0 +1,37 @@
+# Credentials & secrets
+.claude/.credentials.json
+.claude/settings.local.json
+.claude/mcp-needs-auth-cache.json
+.claude/security_warnings_state_*.json
+.claude/stats-cache.json
+
+# Runtime & cache
+.claude/history.jsonl
+.claude/projects/
+.claude/debug/
+.claude/telemetry/
+.claude/file-history/
+.claude/plugins/
+.claude/backups/
+.claude/cache/
+.claude/paste-cache/
+.claude/shell-snapshots/
+.claude/session-env/
+.claude/ide/
+.claude/downloads/
+.claude/statsig/
+.claude/bash-command-log.txt
+
+# Session state
+.claude/plans/
+.claude/todos/
+.claude/tasks/
+.claude/teams/
+
+# One-time backups
+.claude/agents.backup.*/
+
+# System
+.DS_Store
+*.swp
+*~

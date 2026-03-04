@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "ENABLE_LSP_TOOL": "1",
+    "MAX_THINKING_TOKENS": "16000",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
+    "BASH_MAX_OUTPUT_LENGTH": "1000000",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-5-20250929",
+    "BASH_DEFAULT_TIMEOUT_MS": "120000",
+    "BASH_MAX_TIMEOUT_MS": "600000",
+    "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run test:*)",
+      "WebFetch"
+    ],
+    "deny": [],
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify.sh \"Claude Code - PreToolUse\" \"도구 실행 준비 중: $CLAUDE_TOOL_NAME\""
+          }
+        ]
+      },
+      {
+        "matcher": "bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"' >> ~/.claude/bash-command-log.txt"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify.sh \"Claude Code - Stop\" \"Claude 응답이 완료되었습니다\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify.sh \"Claude Code\" \"Permission required\""
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify.sh \"Claude Code\" \"Waiting for input\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/UserPromptSubmit/append_ultrathink.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccstatusline@latest",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "jdtls@claude-code-lsps": true,
+    "kotlin-lsp@claude-code-lsps": true,
+    "vtsls@claude-code-lsps": true,
+    "pyright@claude-code-lsps": true,
+    "frontend-design@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "serena@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "atlassian@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "greptile@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
+    "Notion@claude-plugins-official": true,
+    "msbaek-tdd@msbaek-claude-plugins": true
+  },
+  "spinnerVerbs": {
+    "mode": "replace",
+    "verbs": [
+      "생각하는 중",
+      "분석하는 중",
+      "코드 읽는 중",
+      "파일 탐색 중",
+      "작성하는 중",
+      "검토하는 중",
+      "실행하는 중",
+      "검색하는 중",
+      "변경 적용 중",
+      "테스트 확인 중",
+      "구조 파악 중",
+      "계획 수립 중",
+      "의존성 추적 중",
+      "리팩토링 중",
+      "디버깅 중",
+      "패턴 매칭 중",
+      "컨텍스트 수집 중",
+      "해결책 모색 중",
+      "최적화 중",
+      "연결고리 찾는 중"
+    ]
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "high"
+}

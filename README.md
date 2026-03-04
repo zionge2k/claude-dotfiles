@@ -2,6 +2,8 @@
 
 > Claude Code 개인 설정 파일 관리 레포지토리.
 > macOS와 Arch Linux에서 동일한 Claude Code 환경을 빠르게 구성합니다.
+>
+> 이 dotfiles는 [msbaek/dotfiles](https://github.com/msbaek/dotfiles)를 기반으로 만들어졌습니다.
 
 ---
 

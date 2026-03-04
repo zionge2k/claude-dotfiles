@@ -71,6 +71,11 @@ Never speculate about code you have not opened. If the user references a specifi
 ALWAYS read and understand relevant files before proposing code edits. Be rigorous and persistent in searching code for key facts. Thoroughly review the style, conventions, and abstractions of the codebase before implementing new features or abstractions.
 </investigate_before_answering>
 
+<root_cause_analysis>
+Find root causes. No temporary fixes. Senior developer standards apply.
+Don't patch symptoms — trace the actual source of the problem before implementing a fix.
+</root_cause_analysis>
+
 ### Quality Control
 
 Only implement what's requested. No over-engineering, hardcoding, or unnecessary file creation.
@@ -92,12 +97,20 @@ If the task is unreasonable or infeasible, or if any of the tests are incorrect,
 If you create any temporary new files, scripts, or helper files for iteration, clean up these files by removing them at the end of the task.
 </reduce_file_creation>
 
+<elegance_check>
+For changes touching 50+ lines or introducing new abstractions: pause and ask "is there a more elegant way?" before finalizing. Skip this for simple, obvious fixes.
+</elegance_check>
+
 ### Long-running Tasks
 
 Complete tasks regardless of context limits. Track state via JSON, progress.txt, and git.
 
 <context_persistence>
 Your context window will be automatically compacted as it approaches its limit, allowing you to continue working indefinitely from where you left off. Therefore, do not stop tasks early due to token budget concerns. As you approach your token budget limit, save your current progress and state to memory before the context window refreshes. Always be as persistent and autonomous as possible and complete tasks fully, even if the end of your budget is approaching. Never artificially stop any task early regardless of the context remaining.
+
+Compression trigger: At ~80% context utilization, apply anchored iterative summarization:
+- Sections: Session Intent | Files Modified (with changes) | Decisions Made | Current State | Next Steps
+- Merge incrementally — never regenerate full summary from scratch.
 </context_persistence>
 
 <state_management>
@@ -106,6 +119,20 @@ Use unstructured text (progress.txt) for freeform progress notes and general con
 Use git for state tracking - it provides a log of what's been done and checkpoints that can be restored.
 Focus on incremental progress - keep track of progress and work on a few things at a time rather than attempting everything at once.
 </state_management>
+
+<output_offloading>
+Large tool outputs (>2KB) should be written to files and referenced by path + summary, not returned verbatim to context.
+- Scratch location: `.claude/scratch/` or `/tmp/`
+- Return: file path + 2-3 line summary
+- Cleanup: remove scratch files at session end
+</output_offloading>
+
+<context_health>
+Monitor for degradation signals during long sessions:
+- Poisoning: tool misalignment, persistent hallucinations, repeated mistakes → truncate context or restart clean
+- Distraction: irrelevant retrieved content reducing quality → filter aggressively before including
+- Confusion: mixing unrelated tasks in single session → use subagent isolation
+</context_health>
 
 ### Collaboration Patterns
 
@@ -391,6 +418,8 @@ TDD 강제 원칙:
 Before marking any task as complete, verify:
 - [ ] All tests pass
 - [ ] Plan/todo documents reflect completed status
+- [ ] Diff behavior between main and changes
+- [ ] "Would a staff engineer approve this?"
 - [ ] Update 폴더별 INDEX.md progress (resume point, status, task counts)
 - [ ] Update 글로벌 INDEX.md 상태 (active/completed/paused) if it exists
 - [ ] Context recorded for next session

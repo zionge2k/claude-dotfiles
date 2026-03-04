@@ -59,7 +59,14 @@
 
 스킬은 Claude Code가 **자동으로 감지하여 적용**하는 전문 지식 모듈입니다. 별도 호출 없이 관련 키워드를 언급하면 활성화됩니다.
 
-### 직접 만든 스킬 (dotfiles 포함, 9개)
+### 직접 만든 스킬 (dotfiles 포함, 11개)
+
+#### 세션 탐색 및 프롬프트 구조화
+
+| 스킬 | 트리거 키워드 | 설명 |
+|------|-------------|------|
+| `agf` | "세션 목록", "session list", "세션 검색", "session search", "agf" | AI Agent Session Finder — `history.jsonl` 기반 세션 리스트/검색/상세분석. list, search, show 커맨드 지원 |
+| `prompt-contracts` | brainstorming, planning, design, 설계, 기능 개발 | Prompt Contracts 프레임워크 — Goal/Constraints/Format/Failure Conditions 4요소로 바이브 코딩 방지 |
 
 #### 일상 생산성
 
@@ -561,6 +568,9 @@
 /commit [--push] [--amend]         커밋 생성
 /weekly-claude-analytics           주간 통계
 /weekly-newsletter                 주간 뉴스레터
+/agf list [YYYY-MM-DD]             세션 리스트
+/agf search [--deep] <쿼리>        세션 검색
+/agf show <세션ID>                  세션 상세 분석
 
 [개발]
 /check-security                    보안 스캔

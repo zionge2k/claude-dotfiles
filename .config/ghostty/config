@@ -1,0 +1,37 @@
+font-family = D2CodingLigature Nerd Font
+font-size = 16
+theme = Catppuccin Latte
+
+# Claude Code highlight visibility fix for light theme
+# ANSI black as bg is too dark → light blue for readable highlights
+palette = 0=#dbe9f6
+
+shell-integration-features = no-cursor, sudo,no-title
+cursor-style = block
+
+# Font and cell adjustments for Korean text
+adjust-cell-height = 15%
+adjust-cell-width = 0%
+adjust-font-baseline = -2%
+grapheme-width-method = unicode
+
+# Font variations for better Korean rendering
+font-synthetic-style = bold,italic,bold-italic
+
+mouse-hide-while-typing = true
+mouse-scroll-multiplier = 2
+window-padding-balance = true
+window-save-state = always
+window-colorspace = "display-p3"
+macos-titlebar-style = tabs
+background-opacity = 1
+
+# keybindings
+keybind = cmd+s>r=reload_config
+keybind = cmd+s>x=close_surface
+keybind = cmd+s>n=new_window
+# tabs
+keybind = cmd+s>c=new_tab
+keybind = cmd+s>shift+l=next_tab
+
+keybind = super+d=unbind

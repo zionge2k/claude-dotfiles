@@ -1,3 +1,4 @@
+# TODO(linux): Homebrew path differs — /home/linuxbrew/.linuxbrew/opt/openjdk@17/bin
 export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 alias dcl="docker compose -f docker-compose-local.yml"
@@ -25,9 +26,11 @@ alias chats-cc='npx claude-code-templates@latest --chats'
 alias clean-mac='npx mac-cleaner-cli'
 
 # --- Homebrew ---
+# TODO(linux): Change Homebrew path — Linux uses /home/linuxbrew/.linuxbrew/bin/brew
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # --- Safe delete ---
+# TODO(linux): Install trash-cli (npm i -g trash-cli) or use trash-put from trash-d
 alias rm='trash'
 
 # --- Editor ---
@@ -119,10 +122,12 @@ export LANG=ko_KR.UTF-8
 export LC_ALL=ko_KR.UTF-8
 
 # --- Zsh plugins (if installed) ---
+# TODO(linux): Change plugin paths — Linux Homebrew uses /home/linuxbrew/.linuxbrew/share/
 [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] && source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # --- Autojump ---
+# TODO(linux): Change autojump path — Linux Homebrew uses /home/linuxbrew/.linuxbrew/etc/
 [ -f /opt/homebrew/etc/profile.d/autojump.sh ] && . /opt/homebrew/etc/profile.d/autojump.sh
 
 # --- Starship prompt ---

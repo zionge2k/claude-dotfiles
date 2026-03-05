@@ -22,11 +22,13 @@ mouse-hide-while-typing = true
 mouse-scroll-multiplier = 2
 window-padding-balance = true
 window-save-state = always
+# TODO(linux): Remove display-p3 (macOS only) and macos-titlebar-style
 window-colorspace = "display-p3"
 macos-titlebar-style = tabs
 background-opacity = 1
 
 # keybindings
+# TODO(linux): Replace cmd/super with ctrl or alt — cmd key is macOS only
 keybind = cmd+s>r=reload_config
 keybind = cmd+s>x=close_surface
 keybind = cmd+s>n=new_window

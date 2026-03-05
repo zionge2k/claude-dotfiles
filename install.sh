@@ -53,27 +53,51 @@ install_deps() {
 # 2. Backup existing config
 # ─────────────────────────────────────────────
 backup_existing() {
-  if [ -d "$CLAUDE_DIR" ]; then
-    local BACKUP_DIR="$CLAUDE_DIR.backup.$(date +%Y%m%d%H%M%S)"
-    warn "Existing ~/.claude/ found."
-    warn "Backing up config files to $BACKUP_DIR"
+  local BACKUP_DIR="$HOME/.dotfiles-backup.$(date +%Y%m%d%H%M%S)"
+  local NEEDS_BACKUP=false
 
+  # Terminal config files that stow will manage
+  local TERMINAL_FILES=(.tmux.conf .zshrc .zprofile)
+  local TERMINAL_CONFIG_DIRS=(.config/ghostty .config/starship.toml .config/nvim/lua/plugins/vim-tmux-navigator.lua .config/keybindings-guide.md)
+
+  # Check if any non-symlink files exist that would conflict
+  for f in "${TERMINAL_FILES[@]}" "${TERMINAL_CONFIG_DIRS[@]}"; do
+    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && NEEDS_BACKUP=true && break
+  done
+  [ -d "$CLAUDE_DIR" ] && NEEDS_BACKUP=true
+
+  if [ "$NEEDS_BACKUP" = true ]; then
+    warn "Backing up existing config files to $BACKUP_DIR"
     mkdir -p "$BACKUP_DIR"
 
-    # Only backup config files (not runtime data)
-    local CONFIG_ITEMS=(
-      CLAUDE.md settings.json keybindings.json code-review.yml
-      claude-watch-hook.sh README.md
-      "Prompt Enhancer.md" Prompt-Enhancer2.md
-    )
-    local CONFIG_DIRS=(agents commands skills hooks docs)
+    # Backup terminal config files (only non-symlinks)
+    for f in "${TERMINAL_FILES[@]}"; do
+      [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && cp "$HOME/$f" "$BACKUP_DIR/" 2>/dev/null || true
+    done
+    for f in "${TERMINAL_CONFIG_DIRS[@]}"; do
+      if [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ]; then
+        mkdir -p "$BACKUP_DIR/$(dirname "$f")"
+        cp -r "$HOME/$f" "$BACKUP_DIR/$f" 2>/dev/null || true
+      fi
+    done
 
-    for item in "${CONFIG_ITEMS[@]}"; do
-      [ -e "$CLAUDE_DIR/$item" ] && cp "$CLAUDE_DIR/$item" "$BACKUP_DIR/" 2>/dev/null || true
-    done
-    for dir in "${CONFIG_DIRS[@]}"; do
-      [ -d "$CLAUDE_DIR/$dir" ] && cp -r "$CLAUDE_DIR/$dir" "$BACKUP_DIR/" 2>/dev/null || true
-    done
+    # Backup Claude config files (not runtime data)
+    if [ -d "$CLAUDE_DIR" ]; then
+      local CONFIG_ITEMS=(
+        CLAUDE.md settings.json keybindings.json code-review.yml
+        claude-watch-hook.sh README.md
+        "Prompt Enhancer.md" Prompt-Enhancer2.md
+      )
+      local CONFIG_DIRS=(agents commands skills hooks docs)
+
+      mkdir -p "$BACKUP_DIR/.claude"
+      for item in "${CONFIG_ITEMS[@]}"; do
+        [ -e "$CLAUDE_DIR/$item" ] && cp "$CLAUDE_DIR/$item" "$BACKUP_DIR/.claude/" 2>/dev/null || true
+      done
+      for dir in "${CONFIG_DIRS[@]}"; do
+        [ -d "$CLAUDE_DIR/$dir" ] && cp -r "$CLAUDE_DIR/$dir" "$BACKUP_DIR/.claude/" 2>/dev/null || true
+      done
+    fi
 
     info "Backup completed: $BACKUP_DIR"
   fi
@@ -85,10 +109,23 @@ backup_existing() {
 deploy_dotfiles() {
   info "Deploying dotfiles with GNU Stow..."
 
-  # Ensure target directory exists
+  # Ensure target directories exist
   mkdir -p "$CLAUDE_DIR"
+  mkdir -p "$HOME/.config/ghostty"
+  mkdir -p "$HOME/.config/nvim/lua/plugins"
 
-  # Remove existing config files/dirs that would conflict with stow
+  # Remove non-symlink terminal config files that would conflict with stow
+  local TERMINAL_FILES=(.tmux.conf .zshrc .zprofile)
+  for f in "${TERMINAL_FILES[@]}"; do
+    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && rm "$HOME/$f" && info "  Removed ~/$f (backed up)"
+  done
+
+  local TERMINAL_CONFIG_FILES=(.config/ghostty/config .config/starship.toml .config/nvim/lua/plugins/vim-tmux-navigator.lua .config/keybindings-guide.md)
+  for f in "${TERMINAL_CONFIG_FILES[@]}"; do
+    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && rm "$HOME/$f" && info "  Removed ~/$f (backed up)"
+  done
+
+  # Remove existing Claude config files/dirs that would conflict with stow
   local STOW_ITEMS=(
     CLAUDE.md settings.json keybindings.json code-review.yml
     claude-watch-hook.sh README.md

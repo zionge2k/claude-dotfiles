@@ -40,25 +40,40 @@ echo "처리할 내용: $CLEANED_ARGUMENTS"
 ```bash
 # YouTube URL 패턴 확인
 if [[ "$CLEANED_ARGUMENTS" == *"youtube.com/watch?v="* ]] || [[ "$CLEANED_ARGUMENTS" == *"youtu.be/"* ]]; then
-    echo "YouTube URL이 감지되었습니다. 메타데이터와 트랜스크립트를 다운로드합니다."
+    echo "YouTube URL이 감지되었습니다."
 
-    # Python 스크립트로 JSON 형식 데이터 추출 (언어 옵션 적용)
-    cd ~/git/lib/download-youtube-transcript
+    # 1단계: youtube-transcript-api로 트랜스크립트 다운로드
+    # video ID 추출 후 언어 옵션에 따라 다운로드
     if [ "$LANG_OPTION" = "kr" ]; then
-        echo "한글 트랜스크립트로 다운로드 시도"
-        YOUTUBE_DATA=$(python script.py -l kr "$CLEANED_ARGUMENTS" 2>/dev/null || python script.py -l en "$CLEANED_ARGUMENTS")
+        echo "한글 트랜스크립트로 다운로드 시도 (실패 시 영어 fallback)"
     else
-        echo "영어 트랜스크립트로 다운로드 시도"
-        YOUTUBE_DATA=$(python script.py -l en "$CLEANED_ARGUMENTS" 2>/dev/null || python script.py -l kr "$CLEANED_ARGUMENTS")
+        echo "영어 트랜스크립트로 다운로드 시도 (실패 시 한글 fallback)"
     fi
 
-    if [ $? -eq 0 ] && [ -n "$YOUTUBE_DATA" ]; then
-        echo "YouTube 데이터 추출 완료."
-        echo "$YOUTUBE_DATA" > /tmp/youtube_data.json
-    else
-        echo "YouTube 데이터 추출 실패. 트랜스크립트로 처리합니다."
-        TRANSCRIPT="$CLEANED_ARGUMENTS"
-    fi
+    # Python으로 트랜스크립트 다운로드 (uv run 사용)
+    uv run --with youtube-transcript-api python3 -c "
+from youtube_transcript_api import YouTubeTranscriptApi
+import re, sys
+url = '$CLEANED_ARGUMENTS'
+m = re.search(r'(?:v=|youtu\.be/)([^&?]+)', url)
+if not m: sys.exit('video ID not found')
+video_id = m.group(1)
+ytt_api = YouTubeTranscriptApi()
+langs = ['ko', 'en'] if '$LANG_OPTION' == 'kr' else ['en', 'ko']
+for lang in langs:
+    try:
+        t = ytt_api.fetch(video_id, languages=[lang])
+        print(' '.join([s.text for s in t.snippets]))
+        sys.exit(0)
+    except Exception: continue
+t = ytt_api.fetch(video_id)
+print(' '.join([s.text for s in t.snippets]))
+"
+
+    # 2단계: Playwright MCP로 메타데이터 추출
+    # YouTube 페이지를 방문하여 영상 제목과 채널명을 추출한다.
+    # browser_navigate → browser_snapshot으로 제목(h1), 채널명 확인
+
 else
     echo "트랜스크립트 데이터로 처리합니다."
     TRANSCRIPT="$CLEANED_ARGUMENTS"
@@ -72,9 +87,9 @@ fi
    - 첫 번째 단어가 언어 옵션이면 제거하고 나머지를 실제 내용으로 처리
    - 정제된 내용이 YouTube URL인지 확인 (youtube.com/watch?v=, youtu.be/ 패턴)
    - URL인 경우:
-     - `~/git/lib/download-youtube-transcript`의 `python script.py` 명령어를 사용하여 JSON 형식으로 메타데이터와 트랜스크립트 추출
-     - 언어 옵션에 따라 `-l kr` (한글 우선) 또는 `-l en` (영어 우선, 기본값)으로 실행
-     - 첫 번째 언어 실패 시 대체 언어로 재시도
+     - `uv run --with youtube-transcript-api`로 트랜스크립트 다운로드
+     - 언어 옵션에 따라 한글 우선 또는 영어 우선으로 시도, 실패 시 대체 언어로 fallback
+     - **Playwright MCP**로 YouTube 페이지 방문하여 메타데이터(제목, 채널명) 추출
    - 트랜스크립트인 경우: 기존 방식대로 직접 처리
 
 2. **메타데이터 자동 생성** (URL인 경우)
@@ -89,6 +104,18 @@ fi
 
 4. **태그 부여**
    - hierarchical tagging 규칙은 `~/.claude/commands/obsidian/add-tag.md` 에 정의된 규칙을 준수
+
+5. **후처리 (문서 저장 후 자동 실행)**
+   - 저장된 파일 경로를 기반으로 다음 명령어를 순차 실행:
+     ```bash
+     # 자동 태깅 (vis가 문서 내용을 분석하여 hierarchical tag 부여)
+     vis tag "저장된_파일경로.md"
+
+     # 관련 문서 연결 (vault 내 유사 문서를 찾아 Related 섹션 추가)
+     vis add-related-docs "저장된_파일경로.md"
+     ```
+   - vis 명령어 실행 결과를 사용자에게 간략히 보고
+   - vis가 설치되어 있지 않거나 에러 발생 시 건너뛰고 안내
 
 ## yaml frontmatter 예시
 

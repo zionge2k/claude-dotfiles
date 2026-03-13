@@ -14,10 +14,16 @@ color: yellow
 1. $ARGUMENTS 로 전달된 url의 문서를 playwright tool로 읽어서
    a. url에 접근할 때는 반드시 playwright tool을 사용해
    b. 로그인 등이 필요한 경우 fetch tool을 사용하면 url에 접근이 안될 수 있어
-2. 아래 규칙(`## 문서 번역 및 요약 규칙`)에 따라 내용을 정리해서 yaml frontmatter를 포함한 obsidian file로
-   저장
+2. 아래 규칙(`## 문서 번역 및 요약 규칙`)에 따라 내용을 정리해서 yaml frontmatter를 포함한 obsidian file로 저장
+   - **저장 경로**: `~/Documents/zion-vault/003-RESOURCES/` (반드시 이 경로에 저장)
+   - **이미지 저장 경로**: `~/Documents/zion-vault/900-ATTACHMENTS/` (반드시 이 경로에 저장)
+   - **이미지 네이밍 규칙**:
+     - 문서 제목에서 kebab-case slug 생성 (핵심 단어 2-4개, 예: `uber-high-throughput`, `prompt-injection`)
+     - 이미지 1개: `900-ATTACHMENTS/{slug}.{ext}` (폴더 생성 불필요)
+     - 이미지 2개 이상: `900-ATTACHMENTS/{slug}/` 폴더 생성 후 그 안에 저장
+     - 문서 내 참조: `../900-ATTACHMENTS/{slug}.{ext}` 또는 `../900-ATTACHMENTS/{slug}/파일명.{ext}`
 3. hierarchical tagging 규칙은 `~/.claude/commands/obsidian/add-tag.md` 에 정의된 규칙을 준수
-4. 문서에 존재하는 이미지를 ATTACHMENTS 폴더에 저장하고, 이번에 작성하는 옵시디언 문서에 포함시켜줘. **이미지는 하나도 누락 없이 포함**되었으면 해
+4. 문서에 존재하는 이미지를 위 네이밍 규칙에 따라 저장하고, 이번에 작성하는 옵시디언 문서에 포함시켜줘. **이미지는 하나도 누락 없이 포함**되었으면 해
 
 ## yaml frontmatter 예시
 

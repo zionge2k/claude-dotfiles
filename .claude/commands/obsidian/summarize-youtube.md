@@ -101,6 +101,13 @@ fi
 
 3. **번역 및 요약**
    - 아래 규칙(`## 문서 번역 및 요약 규칙`)에 따라 내용을 정리해서 yaml frontmatter를 포함한 obsidian file로 저장
+   - **저장 경로**: `~/Documents/zion-vault/003-RESOURCES/` (반드시 이 경로에 저장)
+   - **이미지 저장 경로**: `~/Documents/zion-vault/900-ATTACHMENTS/` (반드시 이 경로에 저장)
+   - **이미지 네이밍 규칙**:
+     - 문서 제목에서 kebab-case slug 생성 (핵심 단어 2-4개, 예: `clean-architecture-spring`, `tdd-patterns`)
+     - 이미지 1개: `900-ATTACHMENTS/{slug}.{ext}` (폴더 생성 불필요)
+     - 이미지 2개 이상: `900-ATTACHMENTS/{slug}/` 폴더 생성 후 그 안에 저장
+     - 문서 내 참조: `../900-ATTACHMENTS/{slug}.{ext}` 또는 `../900-ATTACHMENTS/{slug}/파일명.{ext}`
 
 4. **태그 부여**
    - hierarchical tagging 규칙은 `~/.claude/commands/obsidian/add-tag.md` 에 정의된 규칙을 준수

@@ -15,6 +15,18 @@ sws() {
 }
 alias swc='cd /Users/iseong/projects/software-campus/sw-campus-client && pnpm dev'
 
+# Ecommerce Shop
+unalias ess 2>/dev/null
+ess() {
+  cd /Users/iseong/projects/ecommerce-shop
+  if [[ "$1" == "-x" ]]; then
+    ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -x test -q
+  else
+    ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -q
+  fi
+}
+alias esc='cd /Users/iseong/projects/ecommerce-shop/ecommerce-frontend && npm run dev'
+
 # Claude Code - agent teams split-pane mode
 alias claude='claude --teammate-mode tmux'
 alias cl='claude'
@@ -28,6 +40,9 @@ alias clean-mac='npx mac-cleaner-cli'
 # --- Homebrew ---
 # TODO(linux): Change Homebrew path — Linux uses /home/linuxbrew/.linuxbrew/bin/brew
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Morning routine: brew upgrade + cleanup
+alias bru='brew upgrade && brew cleanup'
 
 # --- Safe delete ---
 # TODO(linux): Install trash-cli (npm i -g trash-cli) or use trash-put from trash-d

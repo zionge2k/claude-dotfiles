@@ -1,6 +1,6 @@
 ---
 argument-hint: "[YYYY-MM-DD] [대화 내용]"
-description: "팀 커피타임 대화를 정리하여 GitHub에 자동 저장"
+description: "팀 커피타임 대화를 정리하여 zion-vault에 저장"
 ---
 
 # 커피타임 대화 정리 - $ARGUMENTS
@@ -25,7 +25,7 @@ Git repository에 자동으로 commit & push합니다.
 
    - 파일명: `YYYY. M. DD. 커피타임.md` (지정된 날짜 또는 오늘 날짜 기반)
    - ex '2025. 9. 09. 커피타임.md'
-   - 저장 위치: `~/git/kt4u/coffee-time/`
+   - 저장 위치: `~/Documents/zion-vault/coffee-time/`
    - 주제별 섹션으로 구조화
    - 액션 아이템과 다음 논의 예정은 있을 경우에만 포함
 
@@ -91,7 +91,7 @@ Git repository에 자동으로 commit & push합니다.
 ```
 파싱된 날짜를 기준으로:
 - 파일명: [파싱된 날짜].md
-- ~/git/kt4u/coffee-time/ 디렉토리에 저장
+- ~/Documents/zion-vault/coffee-time/ 디렉토리에 저장
 - 주제별로 체계적으로 정리된 마크다운 형식
 - 문서 제목에는 한국어 날짜 형식 사용 (YYYY년 MM월 DD일)
 ```
@@ -99,11 +99,8 @@ Git repository에 자동으로 commit & push합니다.
 ### 3단계: Git 자동화
 
 ```bash
-cd ~/git/kt4u/coffee-time
-git pull origin main
-git add [생성된 파일명]
-git commit -m "docs: add coffee time notes for [날짜]"
-git push origin main
+cd ~/Documents/zion-vault/coffee-time
+# zion-vault는 Obsidian vault이므로 git 작업은 vault 레벨에서 관리
 ```
 
 ## 사용 예시
@@ -168,7 +165,7 @@ git push origin main
 
 ## 주의사항
 
-- Git repository는 `~/git/kt4u/coffee-time`에 위치해야 함
+- 저장 위치는 `~/Documents/zion-vault/coffee-time/`
 - 같은 날짜의 파일이 이미 존재하는 경우 내용을 추가하지 않고 에러 발생
 - 대화 내용이 비어있거나 너무 짧으면 경고 메시지 출력
 - Git 작업 중 오류 발생 시 상세한 에러 메시지 제공
@@ -178,9 +175,7 @@ git push origin main
 ```
 ✅ 커피타임 노트가 성공적으로 생성되었습니다!
 
-📝 파일: ~/git/kt4u/coffee-time/2025-09-12.md
-🔗 Repository: https://github.com/ktown4u/coffee-time
-📊 커밋: docs: add coffee time notes for 2025-09-12
+📝 파일: ~/Documents/zion-vault/coffee-time/2025. 9. 12. 커피타임.md
 
 주요 논의 사항:
 - 프로젝트 아키텍처 선택

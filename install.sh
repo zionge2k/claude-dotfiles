@@ -143,8 +143,8 @@ deploy_dotfiles() {
   # Skills: only remove user-created ones (preserve externally installed)
   local USER_SKILLS=(
     agf brunch-writer daily-work-logger learning-tracker obsidian-vault
-    project-time-tracker prompt-contracts usage-pattern-analyzer vis
-    weekly-claude-analytics weekly-newsletter
+    project-time-tracker prompt-contracts sourcing-keyword-research
+    usage-pattern-analyzer vis weekly-claude-analytics weekly-newsletter
   )
   for skill in "${USER_SKILLS[@]}"; do
     [ -d "$CLAUDE_DIR/skills/$skill" ] && [ ! -L "$CLAUDE_DIR/skills/$skill" ] && rm -rf "$CLAUDE_DIR/skills/$skill" 2>/dev/null || true

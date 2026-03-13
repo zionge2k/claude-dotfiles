@@ -50,6 +50,7 @@ fi
 
 3. **번역**
    - 아래 규칙(`## 문서 번역 규칙`)에 따라 내용을 정리해서 yaml frontmatter를 포함한 obsidian file로 저장
+   - **저장 경로**: `~/Documents/zion-vault/003-RESOURCES/` (반드시 이 경로에 저장)
 
 4. **태그 부여**
    - hierarchical tagging 규칙은 `~/.claude/commands/obsidian/add-tag.md` 에 정의된 규칙을 준수

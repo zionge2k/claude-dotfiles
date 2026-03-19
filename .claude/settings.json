@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/notify.sh \"Claude Code\" \"작업이 완료되었습니다\""
+            "command": "~/.claude/hooks/notify.sh \"Claude Code\" \"작업이 완료되었습니다\" goto"
           }
         ]
       }

@@ -8,7 +8,13 @@ MESSAGE="${2:-Notification}"
 case "$(uname -s)" in
   Darwin)
     if command -v terminal-notifier &>/dev/null; then
-      terminal-notifier -title "$TITLE" -message "$MESSAGE" -sound default -timeout 30
+      # Enrich message with tmux window name if inside tmux
+      if [ -n "$TMUX" ]; then
+        TMUX_WINDOW_NAME=$(/opt/homebrew/bin/tmux display-message -p '#{window_name}')
+        MESSAGE="$MESSAGE [$TMUX_WINDOW_NAME]"
+      fi
+      terminal-notifier -title "$TITLE" -message "$MESSAGE" -sound default -timeout 30 \
+        -activate com.mitchellh.ghostty
     elif command -v osascript &>/dev/null; then
       osascript -e "display notification \"$MESSAGE\" with title \"$TITLE\" sound name \"Ping\""
     fi

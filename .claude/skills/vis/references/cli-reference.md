@@ -605,6 +605,84 @@ vis connect-status
 vis connect-status --detailed
 ```
 
+## graph - 문서 관계 그래프 시각화
+
+문서 간 관계를 PyVis 인터랙티브 HTML 그래프로 시각화. Wikilink + 시맨틱 유사도를 결합하여 표시.
+
+### 기본 사용법
+```bash
+vis graph "문서명.md"
+```
+
+### 옵션
+
+| 옵션 | 설명 | 기본값 |
+|---|---|---|
+| `file` (positional) | 기준 문서 경로 (필수) | - |
+| `--top-k` | 관련 문서 수 | 10 |
+| `--threshold` | 유사도 임계값 | 0.3 |
+| `--depth` | 탐색 깊이 (1-3) | 1 |
+| `--expand-threshold` | 다음 depth로 확장할 최소 유사도 | 0.5 |
+| `--no-open` | 브라우저 열지 않음 | off |
+| `-o, --output` | 출력 파일 경로 | - |
+
+### 예제
+```bash
+# 기본 그래프 (depth 1)
+vis graph "TDD-기초.md"
+
+# 2단계 탐색
+vis graph "디자인패턴.md" --depth 2
+
+# 넓은 탐색 (더 많은 노드 + 깊이 3)
+vis graph "클린코드.md" --depth 3 --top-k 15
+
+# 파일로만 저장 (브라우저 안 열기)
+vis graph "문서명.md" --no-open -o graph.html
+```
+
+## serve - 검색 서버 시작
+
+BGE-M3 모델을 메모리에 상주시키는 백그라운드 FastAPI 서버를 시작. `vis search` 사용 시 필수.
+
+### 기본 사용법
+```bash
+vis serve
+```
+
+### 옵션
+
+| 옵션 | 설명 | 기본값 |
+|---|---|---|
+| `--port` | 서버 포트 | 8741 |
+
+### 예제
+```bash
+# 기본 시작
+vis serve
+
+# 커스텀 포트
+vis serve --port 9000
+```
+
+## stop - 검색 서버 중지
+
+실행 중인 vis 검색 서버를 중지.
+
+### 기본 사용법
+```bash
+vis stop
+```
+
+## status - 검색 서버 상태 확인
+
+vis 검색 서버의 실행 상태, 문서 수, 인덱스 상태를 확인.
+
+### 기본 사용법
+```bash
+vis status
+```
+
 ## 검색 방법 선택 가이드
 
 | 검색 방법 | 사용 상황 | 속도 | 정확도 |

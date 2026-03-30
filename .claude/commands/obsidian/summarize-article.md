@@ -24,6 +24,12 @@ color: yellow
      - 문서 내 참조: `../900-ATTACHMENTS/{slug}.{ext}` 또는 `../900-ATTACHMENTS/{slug}/파일명.{ext}`
 3. hierarchical tagging 규칙은 `~/.claude/commands/obsidian/add-tag.md` 에 정의된 규칙을 준수
 4. 문서에 존재하는 이미지를 위 네이밍 규칙에 따라 저장하고, 이번에 작성하는 옵시디언 문서에 포함시켜줘. **이미지는 하나도 누락 없이 포함**되었으면 해
+5. **후처리** (문서 저장 후 자동 실행)
+   ```bash
+   vis tag "저장된_파일경로.md"
+   vis add-related-docs "저장된_파일경로.md"
+   ```
+   - vis가 미설치이거나 에러 발생 시 건너뛰고 안내
 
 ## yaml frontmatter 예시
 

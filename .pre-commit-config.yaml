@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+        exclude: '\.md$'
+      - id: check-yaml
+      - id: check-json
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '\.lock$'
+
+  - repo: local
+    hooks:
+      - id: check-env-files
+        name: Check for actual .env files
+        entry: .claude/hooks/check-env-files.sh
+        language: script
+        pass_filenames: false
+
+      - id: check-hardcoded-paths
+        name: Check for hardcoded personal paths
+        entry: .claude/hooks/check-hardcoded-paths.sh
+        language: script
+        pass_filenames: false
+
+      - id: check-sensitive-files
+        name: Check for sensitive file extensions
+        entry: .claude/hooks/check-sensitive-files.sh
+        language: script
+        pass_filenames: false

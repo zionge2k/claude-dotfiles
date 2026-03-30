@@ -108,3 +108,15 @@ Constraints:
 
 Remember to include all necessary subsections as described in the summary structure.
 ```
+
+## 저장 전 자체 검증 (Self-Check)
+
+문서를 저장하기 전에 다음 항목을 검증한다. 미통과 시 수정 후 저장.
+
+- [ ] Highlights/Summary에 핵심 3-5개가 bullet으로 정리되어 있는가
+- [ ] 원문의 주요 섹션(heading)이 모두 Detailed Summary에 포함되었는가
+- [ ] 원문에 코드 예시가 있으면 요약에도 포함되었는가
+- [ ] 원문에 없는 정보를 추가하지 않았는가
+- [ ] 기술 용어 첫 언급 시 영어 원문이 병기되었는가
+- [ ] 이미지가 원문에 있으면 하나도 누락 없이 포함되었는가
+- [ ] frontmatter 필수 필드(id, aliases, tags, author, created_at, source)가 모두 있는가

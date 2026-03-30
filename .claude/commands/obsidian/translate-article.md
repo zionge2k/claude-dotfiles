@@ -256,3 +256,15 @@ WebFetch(url="https://example.com/article", prompt="Extract content")
 - **Better image handling**: Can access all images for ATTACHMENTS folder
 - **Login support**: Can handle authentication if needed
 - **Consistent results**: Reliable content extraction for translation
+
+## 저장 전 자체 검증 (Self-Check)
+
+문서를 저장하기 전에 다음 항목을 검증한다. 미통과 시 수정 후 저장.
+
+- [ ] 원문의 모든 heading(h1~h6)이 번역본에 동일한 레벨로 존재하는가
+- [ ] bullet point → bullet point, numbered list → numbered list 구조가 보존되었는가
+- [ ] 모든 heading과 주요 기술 용어에 영어 원문이 괄호로 병기되었는가
+- [ ] 원문에 코드 예시가 있으면 번역본에도 그대로 포함되었는가
+- [ ] 원문에 없는 내용을 추가하거나 요약하지 않았는가
+- [ ] 이미지가 원문에 있으면 하나도 누락 없이 포함되었는가
+- [ ] frontmatter 필수 필드(id, aliases, tags, author, created_at, source)가 모두 있는가

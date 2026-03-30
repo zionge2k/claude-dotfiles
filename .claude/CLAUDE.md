@@ -108,9 +108,9 @@ Complete tasks regardless of context limits. Track state via JSON, progress.txt,
 <context_persistence>
 Your context window will be automatically compacted as it approaches its limit, allowing you to continue working indefinitely from where you left off. Therefore, do not stop tasks early due to token budget concerns. As you approach your token budget limit, save your current progress and state to memory before the context window refreshes. Always be as persistent and autonomous as possible and complete tasks fully, even if the end of your budget is approaching. Never artificially stop any task early regardless of the context remaining.
 
-Compression trigger: At ~80% context utilization, apply anchored iterative summarization:
-- Sections: Session Intent | Files Modified (with changes) | Decisions Made | Current State | Next Steps
-- Merge incrementally — never regenerate full summary from scratch.
+Compression trigger: ~70% 컨텍스트 사용률에서 앵커드 반복 요약(Anchored Iterative Summarization) 적용:
+- 섹션: Session Intent | Files Modified (with changes) | Decisions Made | Current State | Next Steps
+- 점진적 병합 — 전체 요약을 처음부터 재생성하지 않음.
 </context_persistence>
 
 <state_management>
@@ -128,10 +128,23 @@ Large tool outputs (>2KB) should be written to files and referenced by path + su
 </output_offloading>
 
 <context_health>
-Monitor for degradation signals during long sessions:
-- Poisoning: tool misalignment, persistent hallucinations, repeated mistakes → truncate context or restart clean
-- Distraction: irrelevant retrieved content reducing quality → filter aggressively before including
-- Confusion: mixing unrelated tasks in single session → use subagent isolation
+컨텍스트 건강 모니터링 및 Context Rot 방어:
+
+정량적 기준 (리서치 기반):
+- 컨텍스트 70%: 즉시 /compact (Anthropic 내부 테스트 품질 저하 시작점)
+- 컨텍스트 90%: /clear 후 재시작
+- 동일 이슈 2회 수정: /clear + 더 나은 프롬프트로 재시작 (컨텍스트 오염 신호)
+- 기능 전환: 새 세션 시작 (컨텍스트 경계 유지)
+
+저하 신호 (2개 이상 발견 시 즉시 새 세션):
+- 이전 결정 망각, 동일 접근법 반복 제안
+- 존재하지 않는 심볼/변수 환각(Hallucination)
+- 도구 사용 오류, 무관한 검색 콘텐츠 포함
+
+오염 대응:
+- Poisoning: 도구 정렬 불일치, 지속적 환각, 반복 실수 → 컨텍스트 잘림 또는 깨끗한 재시작
+- Distraction: 무관한 검색 콘텐츠 → 포함 전 공격적 필터링
+- Confusion: 서로 다른 작업 혼합 → 서브에이전트 격리 사용
 </context_health>
 
 ### Collaboration Patterns
@@ -181,197 +194,6 @@ Korean by default. Respect user's tool choices.
 
 </communication_style>
 
-### Work Patterns
-
-Use plan mode before starting projects. Verify API/SDK usage with CONTEXT7 MCP.
-
-<work_patterns>
-
-- Always start in plan mode before working on any project
-- When using APIs, SDKs, or libraries, use CONTEXT7 MCP tool to verify correct usage before proceeding
-
-Plan Folder Structure:
-- 새 작업 시작 시 `PROJECT_ROOT/.claude/plans/YYYY-MM-DD-kebab-case-topic/` 폴더를 생성한다.
-  - 날짜: 작업 시작일
-  - topic: Claude가 작업 내용에서 3~5단어 kebab-case 이름을 자동 생성
-  - 예: `.claude/plans/2026-02-14-plan-folder-isolation/`
-- 폴더 안에 plan 파일과 `INDEX.md`를 저장한다.
-- Update the plan as work progresses.
-
-폴더별 INDEX.md:
-- 해당 작업의 상태를 관리하는 파일. 세션 시작 시 이 파일로 resume.
-- Structure:
-  ```
-  # Plan: 작업 제목
-  Created: YYYY-MM-DD
-  Status: active|completed|paused
-
-  ## Progress
-  - [x] 완료된 작업
-  - [ ] 미완료 작업
-
-  ## Resume Point
-  구체적인 재개 지점 (파일명, 단계 번호, 남은 작업)
-
-  ## Files
-  - plan-file.md — 설명
-  ```
-- "resume point" must be specific enough to continue immediately in a new session
-
-글로벌 INDEX.md (`PROJECT_ROOT/.claude/plans/INDEX.md`):
-- 폴더 목록과 한줄 요약만 관리 (참고용)
-- Structure:
-  ```
-  # Plans Index
-  Last updated: YYYY-MM-DD
-
-  ## Active
-  - [YYYY-MM-DD-topic/](YYYY-MM-DD-topic/) — 요약
-
-  ## Completed
-  - [YYYY-MM-DD-topic/](YYYY-MM-DD-topic/) — 요약 | completed: YYYY-MM-DD
-
-  ## Paused
-  - [YYYY-MM-DD-topic/](YYYY-MM-DD-topic/) — 요약 | reason
-  ```
-- Update whenever a plan folder is created, completed, or paused
-
-하위 호환:
-- 기존 루트의 랜덤 이름 plan 파일(.claude/plans/*.md)은 그대로 유지
-- 날짜 폴더가 없는 프로젝트에서는 기존 방식으로 동작
-</work_patterns>
-
-### Git Workflow
-
-Handle Korean commit messages properly to avoid encoding issues.
-
-<git_commit_messages>
-When creating git commits with Korean (or any non-ASCII) messages:
-
-1. ALWAYS use the Write tool to create a temporary file for commit messages
-2. Use `git commit -F <file>` to read the message from the file
-3. Clean up the temporary file after committing
-
-**CRITICAL**: Use the Write tool, NOT bash heredoc (`cat << EOF`), to ensure proper UTF-8 encoding.
-
-Example workflow:
-```
-Step 1: Use Write tool to create temp file
-- Tool: Write
-- file_path: /tmp/commit-msg-unique.txt
-- content: [Your commit message with Korean]
-
-Step 2: Commit using the file
-- bash: git add <files> && git commit -F /tmp/commit-msg-unique.txt
-
-Step 3: Clean up
-- bash: rm /tmp/commit-msg-unique.txt
-```
-
-Example commit message format:
-```
-feat: 한글 커밋 메시지 예제
-
-- 첫 번째 변경사항
-- 두 번째 변경사항
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Why Write tool works better:**
-- Write tool preserves UTF-8 encoding natively
-- Bash heredoc can cause Unicode escape sequences for non-ASCII characters
-- Write tool is more reliable across different shell configurations
-</git_commit_messages>
-
-<use_commit_skill>
-커밋 생성 시 항상 /commit 스킬을 사용할 것.
-- 자동 conventional commit 메시지 생성
-- 내장 한글 인코딩 안전성 (Write tool 사용)
-- `--push`: 커밋 후 자동 push
-- `--amend`: 이전 커밋 수정
-수동 git commit은 /commit이 불가능한 환경에서만 허용.
-</use_commit_skill>
-
-### Tool Preferences
-
-Preferred tools for search and exploration.
-
-<tool_preferences>
-| Task | Tool | Reason |
-|------|------|--------|
-| Syntax-aware search | `sg --lang <lang> -p '<pattern>'` | Optimized for structural matching |
-| Text search | `rg` (ripgrep) | Faster than grep, respects .gitignore |
-| File finding | `fd` | Faster and more intuitive than find |
-| Web content | Playwright MCP 우선 | 동적/인증 콘텐츠 지원, Cloudflare 우회 |
-| **코드 탐색 (Java)** | **LSP (JDTLS) 필수** | **정의/참조/구현/호출 관계를 정확하게 탐색** |
-| Large files (>500줄) | Serena/LSP symbolic tools | Read보다 효율적 |
-
-**Web Content 규칙:**
-- 1순위: Playwright MCP (browser_navigate → browser_snapshot)
-- 2순위: WebFetch (정적 public 페이지만)
-- 금지: fetch/bash curl/wget (렌더링 불가, 403 차단)
-
-**File Reading 안전:**
-- 1000줄 초과 파일: offset/limit 파라미터 사용
-- Edit 전: old_string 고유성 확인
-</tool_preferences>
-
-### LSP-First Development
-
-Java 프로젝트(특히 레거시)에서 LSP(JDTLS)를 최우선으로 활용. Grep/Read 전에 항상 LSP를 먼저 시도.
-
-<lsp_enforcement>
-**CRITICAL: LSP 도구를 사용할 수 있는 환경에서는 반드시 LSP를 먼저 사용하라. 이것은 선택이 아니라 의무이다.**
-
-**LSP 필수 사용 상황:**
-
-| 작업 | LSP Operation | Grep/Read 대신 LSP를 써야 하는 이유 |
-|------|---------------|--------------------------------------|
-| 심볼 정의 찾기 | `goToDefinition` | 정확한 위치, 상속/인터페이스 고려 |
-| 참조 추적 | `findReferences` | 모든 사용처를 정확하게 찾음 |
-| 타입/문서 확인 | `hover` | IDE 수준의 타입 정보 제공 |
-| 파일 구조 파악 | `documentSymbol` | 클래스/메서드 목록을 구조적으로 반환 |
-| 인터페이스 구현체 찾기 | `goToImplementation` | 상속 계층 정확히 탐색 |
-| 호출 관계 파악 | `incomingCalls` / `outgoingCalls` | 콜 그래프를 정확하게 추적 |
-| 워크스페이스 심볼 검색 | `workspaceSymbol` | 프로젝트 전체에서 심볼 검색 |
-
-**Java Legacy Project 규칙 (JDTLS):**
-- Java 파일 작업 시 LSP가 활성화되어 있으면 **반드시** LSP를 1순위로 사용
-- `findReferences`로 변경 영향 범위를 파악한 후에만 리팩토링 진행
-- `goToImplementation`으로 인터페이스/추상 클래스의 구현체를 정확히 확인
-- `incomingCalls`로 메서드 호출자를 추적하여 변경의 파급 효과 분석
-- Legacy 코드의 복잡한 상속 구조는 `goToDefinition` + `goToImplementation` 조합으로 탐색
-- 대규모 Java 파일은 `documentSymbol`로 구조 먼저 파악, 필요한 심볼만 선택적으로 Read
-
-**의사결정 흐름:**
-```
-코드 탐색이 필요한가?
-├─ 심볼의 정의/참조/구현을 찾는가? → LSP 사용 (MUST)
-├─ 파일 구조를 파악하는가? → LSP documentSymbol (MUST)
-├─ 호출 관계를 추적하는가? → LSP incomingCalls/outgoingCalls (MUST)
-├─ 텍스트 패턴 검색인가? (로그 메시지, 설정값 등) → Grep 허용
-└─ 파일 전체 내용이 필요한가? → Read 허용 (단, 500줄 이하)
-```
-
-**금지 패턴:**
-- ❌ 클래스/메서드 정의를 Grep으로 찾기 → LSP `goToDefinition` 사용
-- ❌ 메서드 사용처를 Grep으로 찾기 → LSP `findReferences` 사용
-- ❌ 인터페이스 구현체를 Grep으로 찾기 → LSP `goToImplementation` 사용
-- ❌ 대형 Java 파일을 Read로 전체 읽기 → LSP `documentSymbol` → 필요한 심볼만 Read
-- ❌ 메서드 호출 관계를 Grep으로 추적 → LSP `incomingCalls`/`outgoingCalls` 사용
-
-**허용 패턴:**
-- ✅ 문자열 리터럴, 설정값, 로그 메시지 검색 → Grep
-- ✅ LSP 서버가 응답하지 않거나 미지원 파일 → Grep/Read fallback
-- ✅ 500줄 이하 소규모 파일 전체 읽기 → Read
-- ✅ 비-Java 파일 (XML, properties, YAML 등) → Grep/Read
-
-**LSP 미응답 시 fallback 절차:**
-1. LSP 호출 시도 (필수)
-2. 에러 또는 타임아웃 발생 시 사용자에게 보고
-3. 사용자 승인 후 Grep/Read로 대체
-</lsp_enforcement>
 
 ### Large-scale Changes
 
@@ -391,41 +213,17 @@ Record useful discoveries during tasks to ai-learnings.md.
 During tasks, recognize information that would help do the task better and faster next time. Save such learnings to ai-learnings.md file in the project.
 </learning>
 
-### Superpowers Integration
+### Contextual Rules (on-demand loading)
 
-Leverage superpowers plugin for structured development workflows.
+<contextual_rules>
+다음 작업 시 해당 문서를 반드시 읽고 규칙을 따를 것:
 
-<brainstorming-context>
-When using superpowers:brainstorming, automatically incorporate:
-- TDD/OOP/DDD 중심 설계 선호
-- 단순성과 실용성 우선 (YAGNI, DRY)
-- 복잡한 작업은 2-5분 단위로 분해
-</brainstorming-context>
-
-<superpowers-workflow>
-For complex development tasks, follow this sequence:
-1. `/superpowers:brainstorming` - 아이디어 정제, 대안 탐색
-2. `/superpowers:writing-plans` - 세부 작업 분해 (파일 경로, 코드, 검증 단계 포함)
-3. `/superpowers:executing-plans` - 점진적 실행 (초기 3개 작업 → 피드백 → 자율 진행)
-
-TDD 강제 원칙:
-
-- NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
-- 코드를 먼저 작성했다면? 삭제하고 처음부터.
-  </superpowers-workflow>
-
-<verification-before-completion>
-Before marking any task as complete, verify:
-- [ ] All tests pass
-- [ ] Plan/todo documents reflect completed status
-- [ ] Diff behavior between main and changes
-- [ ] "Would a staff engineer approve this?"
-- [ ] Update 폴더별 INDEX.md progress (resume point, status, task counts)
-- [ ] Update 글로벌 INDEX.md 상태 (active/completed/paused) if it exists
-- [ ] Context recorded for next session
-- [ ] Git worktree isolation confirmed (if applicable)
-
-Recoverability:
-- Commit after each meaningful unit of work
-- Keep state rollback-friendly at all times
-  </verification-before-completion>
+| 작업 컨텍스트 | 읽을 문서 |
+|-------------|----------|
+| Plan 생성/수정, 폴더 구조 결정 | `.claude/docs/WORK-PATTERNS.md` |
+| Git commit, PR 생성, 브랜치 작업 | `.claude/docs/GIT-WORKFLOW.md` |
+| 도구 선택 판단 (검색, 웹, 파일) | `.claude/docs/TOOL-PREFERENCES.md` |
+| Java/Spring Boot/LSP 작업 | `.claude/docs/LSP-RULES.md` |
+| Superpowers/brainstorming/TDD 워크플로우 | `.claude/docs/SUPERPOWERS.md` |
+| 작업 완료 전 검증 | `.claude/docs/SUPERPOWERS.md` (verification-before-completion) |
+</contextual_rules>

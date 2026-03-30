@@ -67,8 +67,9 @@ Treat AI performance degradation as a code quality warning signal. When AI strug
 Never speculate without reading code. Always open and verify files before answering.
 
 <investigate_before_answering>
-Never speculate about code you have not opened. If the user references a specific file, you MUST read the file before answering. Make sure to investigate and read relevant files BEFORE answering questions about the codebase. Never make any claims about code before investigating unless you are certain of the correct answer - give grounded and hallucination-free answers.
-ALWAYS read and understand relevant files before proposing code edits. Be rigorous and persistent in searching code for key facts. Thoroughly review the style, conventions, and abstractions of the codebase before implementing new features or abstractions.
+코드를 열어보지 않고 추측 금지. 파일 참조 시 반드시 먼저 Read.
+코드 편집 전 관련 파일을 읽고 스타일/컨벤션/추상화를 파악한 후 진행.
+환각 없는 근거 기반 답변만 제공.
 </investigate_before_answering>
 
 <root_cause_analysis>
@@ -80,22 +81,10 @@ Don't patch symptoms — trace the actual source of the problem before implement
 
 Only implement what's requested. No over-engineering, hardcoding, or unnecessary file creation.
 
-<avoid_overengineering>
-Avoid over-engineering. Only make changes that are directly requested or clearly necessary. Keep solutions simple and focused.
-Don't add features, refactor code, or make "improvements" beyond what was asked. A bug fix doesn't need surrounding code cleaned up. A simple feature doesn't need extra configurability.
-Don't add error handling, fallbacks, or validation for scenarios that can't happen. Trust internal code and framework guarantees. Only validate at system boundaries (user input, external APIs). Don't use feature flags or backwards-compatibility shims when you can just change the code.
-Don't create helpers, utilities, or abstractions for one-time operations. Don't design for hypothetical future requirements. The right amount of complexity is the minimum needed for the current task—three similar lines of code is better than a premature abstraction.
-</avoid_overengineering>
-
 <avoid_hardcoding_for_tests>
-Please write a high-quality, general-purpose solution using the standard tools available. Do not create helper scripts or workarounds to accomplish the task more efficiently. Implement a solution that works correctly for all valid inputs, not just the test cases. Do not hard-code values or create solutions that only work for specific test inputs. Instead, implement the actual logic that solves the problem generally.
-Focus on understanding the problem requirements and implementing the correct algorithm. Tests are there to verify correctness, not to define the solution. Provide a principled implementation that follows best practices and software design principles.
-If the task is unreasonable or infeasible, or if any of the tests are incorrect, please inform me rather than working around them. The solution should be robust, maintainable, and extendable.
+테스트 케이스만 통과하는 하드코딩 금지. 모든 유효한 입력에 대해 올바르게 동작하는 범용 솔루션을 구현할 것.
+테스트가 불합리하거나 불가능하면 작업 대신 알려줄 것.
 </avoid_hardcoding_for_tests>
-
-<reduce_file_creation>
-If you create any temporary new files, scripts, or helper files for iteration, clean up these files by removing them at the end of the task.
-</reduce_file_creation>
 
 <elegance_check>
 For changes touching 50+ lines or introducing new abstractions: pause and ask "is there a more elegant way?" before finalizing. Skip this for simple, obvious fixes.
@@ -168,10 +157,6 @@ To take advantage of subagent orchestration:
 3. Adjust conservativeness if needed: Only delegate to subagents when the task clearly benefits from a separate agent with a new context window.
    </subagent_orchestration>
 
-<use_parallel_tool_calls>
-If you intend to call multiple tools and there are no dependencies between the tool calls, make all of the independent tool calls in parallel. Prioritize calling tools simultaneously whenever the actions can be done in parallel rather than sequentially. For example, when reading 3 files, run 3 tool calls in parallel to read all 3 files into context at the same time. Maximize use of parallel tool calls where possible to increase speed and efficiency. However, if some tool calls depend on previous calls to inform dependent values like the parameters, do NOT call these tools in parallel and instead call them sequentially. Never use placeholders or guess missing parameters in tool calls.
-</use_parallel_tool_calls>
-
 ### Communication
 
 Korean by default. Respect user's tool choices.
@@ -193,7 +178,6 @@ Korean by default. Respect user's tool choices.
 - 응답 끝에 "Uncertainty Map" 섹션 추가
 
 </communication_style>
-
 
 ### Large-scale Changes
 

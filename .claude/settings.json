@@ -27,11 +27,22 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "bash",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"' >> ~/.claude/bash-command-log.txt"
+            "command": "~/.claude/hooks/log-bash-command.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/post-edit-check.sh"
           }
         ]
       }
@@ -42,6 +53,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/notify.sh \"Claude Code\" \"작업이 완료되었습니다\""
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-metrics.sh"
           }
         ]
       }

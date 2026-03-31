@@ -29,7 +29,7 @@ tags: [계층적 태그]
 
 ### 2. 계층적 태그 시스템
 
-- tags, author는 ~/.claude/commands/obsidian/add-tag.md에 정의된 규칙을 적용
+- tags, author는 ~/.claude/skills/obsidian-add-tag/SKILL.md에 정의된 규칙을 적용
 
 ### 3. 콘텐츠 구성
 

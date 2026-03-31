@@ -88,7 +88,7 @@ backup_existing() {
         claude-watch-hook.sh README.md
         "Prompt Enhancer.md" Prompt-Enhancer2.md
       )
-      local CONFIG_DIRS=(agents commands skills hooks docs)
+      local CONFIG_DIRS=(agents skills hooks docs)
 
       mkdir -p "$BACKUP_DIR/.claude"
       for item in "${CONFIG_ITEMS[@]}"; do
@@ -131,7 +131,7 @@ deploy_dotfiles() {
     claude-watch-hook.sh README.md
     "Prompt Enhancer.md" Prompt-Enhancer2.md
   )
-  local STOW_DIRS=(agents commands hooks docs)
+  local STOW_DIRS=(agents hooks docs)
 
   for item in "${STOW_ITEMS[@]}"; do
     [ -e "$CLAUDE_DIR/$item" ] && [ ! -L "$CLAUDE_DIR/$item" ] && rm "$CLAUDE_DIR/$item" 2>/dev/null || true
@@ -140,15 +140,13 @@ deploy_dotfiles() {
     [ -d "$CLAUDE_DIR/$dir" ] && [ ! -L "$CLAUDE_DIR/$dir" ] && rm -rf "$CLAUDE_DIR/$dir" 2>/dev/null || true
   done
 
-  # Skills: only remove user-created ones (preserve externally installed)
-  local USER_SKILLS=(
-    agf brunch-writer daily-work-logger learning-tracker obsidian-vault
-    project-time-tracker prompt-contracts sourcing-keyword-research
-    usage-pattern-analyzer vis weekly-claude-analytics weekly-newsletter
-  )
-  for skill in "${USER_SKILLS[@]}"; do
-    [ -d "$CLAUDE_DIR/skills/$skill" ] && [ ! -L "$CLAUDE_DIR/skills/$skill" ] && rm -rf "$CLAUDE_DIR/skills/$skill" 2>/dev/null || true
-  done
+  # Skills: dynamically detect from dotfiles repo and remove non-symlink conflicts
+  if [ -d "$DOTFILES_DIR/.claude/skills" ]; then
+    for skill_dir in "$DOTFILES_DIR/.claude/skills"/*/; do
+      skill_name="$(basename "$skill_dir")"
+      [ -d "$CLAUDE_DIR/skills/$skill_name" ] && [ ! -L "$CLAUDE_DIR/skills/$skill_name" ] && rm -rf "$CLAUDE_DIR/skills/$skill_name" 2>/dev/null || true
+    done
+  fi
 
   # Run stow with --no-folding to avoid symlinking entire directories
   cd "$DOTFILES_DIR"

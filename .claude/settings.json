@@ -21,7 +21,19 @@
       "Bash(npm run test:*)",
       "WebFetch"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/)",
+      "Bash(sudo rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(mkfs:*)",
+      "Bash(dd if=/dev:*)"
+    ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
@@ -109,10 +121,6 @@
   },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
-    "jdtls@claude-code-lsps": true,
-    "kotlin-lsp@claude-code-lsps": true,
-    "vtsls@claude-code-lsps": true,
-    "pyright@claude-code-lsps": true,
     "frontend-design@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "github@claude-plugins-official": true,
@@ -130,7 +138,6 @@
     "hookify@claude-plugins-official": true,
     "learning-output-style@claude-plugins-official": true,
     "playground@claude-plugins-official": true,
-    "Notion@claude-plugins-official": true,
     "msbaek-tdd@msbaek-claude-plugins": true
   },
   "spinnerVerbs": {

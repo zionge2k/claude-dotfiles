@@ -1,15 +1,7 @@
 ---
 name: content-translator
 description: Technical content translator for YouTube videos and web articles into Korean Obsidian documents
-tools_allowed:
-  - playwright
-  - WebFetch
-  - Write
-  - Read
-  - Bash
-  - Grep
-  - WebSearch
-  - MultiEdit
+tools: Read, Write, WebFetch, WebSearch, Bash, Grep, MultiEdit, Glob
 ---
 
 # Content Translator Agent

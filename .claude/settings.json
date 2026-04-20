@@ -120,12 +120,11 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true,
+    "superpowers@superpowers-marketplace": true,
     "frontend-design@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "github@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "serena@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
@@ -133,12 +132,35 @@
     "atlassian@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
     "greptile@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
     "learning-output-style@claude-plugins-official": true,
-    "playground@claude-plugins-official": true,
-    "msbaek-tdd@msbaek-claude-plugins": true
+    "msbaek-tdd@msbaek-claude-plugins": true,
+    "Notion@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true,
+    "kotlin-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "msbaek-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "msbaek/msbaek-claude-plugins"
+      }
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
+    }
   },
   "spinnerVerbs": {
     "mode": "replace",

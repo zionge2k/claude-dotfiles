@@ -12,14 +12,6 @@
 4. 사용자에게 현재 상태와 다음 단계를 보고한다.
 </when-starting-a-new-session>
 
-<session-start-hook>
-  <EXTREMELY_IMPORTANT>
-  You have Superpowers.
-
-**RIGHT NOW, go read**: @~/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.0/skills/using-superpowers/SKILL.md
-</EXTREMELY_IMPORTANT>
-</session-start-hook>
-
 ### when executing a new task
 
 <when-executing-a-new-task>

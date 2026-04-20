@@ -178,8 +178,8 @@ install_plugins() {
   # Add marketplaces
   local MARKETPLACES=(
     "anthropics/claude-plugins-official"
-    "anthropics/claude-code-lsps"
     "msbaek/msbaek-claude-plugins"
+    "obra/superpowers-marketplace"
   )
   for mp in "${MARKETPLACES[@]}"; do
     claude plugin marketplace add "$mp" 2>/dev/null || true
@@ -189,12 +189,10 @@ install_plugins() {
 
   # Official plugins
   local PLUGINS=(
-    "superpowers@claude-plugins-official"
     "frontend-design@claude-plugins-official"
     "code-review@claude-plugins-official"
     "github@claude-plugins-official"
     "feature-dev@claude-plugins-official"
-    "code-simplifier@claude-plugins-official"
     "playwright@claude-plugins-official"
     "serena@claude-plugins-official"
     "security-guidance@claude-plugins-official"
@@ -202,25 +200,24 @@ install_plugins() {
     "atlassian@claude-plugins-official"
     "plugin-dev@claude-plugins-official"
     "explanatory-output-style@claude-plugins-official"
-    "claude-md-management@claude-plugins-official"
     "greptile@claude-plugins-official"
     "hookify@claude-plugins-official"
     "learning-output-style@claude-plugins-official"
-    "playground@claude-plugins-official"
     "Notion@claude-plugins-official"
   )
 
-  # LSP plugins
+  # LSP plugins (now part of claude-plugins-official marketplace)
   local LSP_PLUGINS=(
-    "jdtls@claude-code-lsps"
-    "kotlin-lsp@claude-code-lsps"
-    "vtsls@claude-code-lsps"
-    "pyright@claude-code-lsps"
+    "jdtls-lsp@claude-plugins-official"
+    "kotlin-lsp@claude-plugins-official"
+    "typescript-lsp@claude-plugins-official"
+    "pyright-lsp@claude-plugins-official"
   )
 
   # Third-party plugins
   local THIRD_PARTY=(
     "msbaek-tdd@msbaek-claude-plugins"
+    "superpowers@superpowers-marketplace"
   )
 
   for plugin in "${PLUGINS[@]}" "${LSP_PLUGINS[@]}" "${THIRD_PARTY[@]}"; do

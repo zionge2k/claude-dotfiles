@@ -30,6 +30,14 @@
 
 # One-time backups
 .claude/agents.backup.*/
+.claude/settings.json.bak.*
+
+# Scratch & ephemeral output
+.claude/scratch/
+.playwright-mcp/
+
+# Python cache
+__pycache__/
 
 # System
 .DS_Store

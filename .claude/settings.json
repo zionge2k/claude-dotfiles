@@ -188,5 +188,17 @@
     ]
   },
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "light",
+  "verbose": true,
+  "skillOverrides": {
+    "brunch-writer": "user-invocable-only",
+    "sourcing-keyword-research": "user-invocable-only",
+    "weekly-newsletter": "user-invocable-only",
+    "weekly-claude-analytics": "user-invocable-only",
+    "lecture-prep": "user-invocable-only",
+    "knowledge-gap-researcher": "name-only",
+    "usage-pattern-analyzer": "name-only",
+    "project-time-tracker": "name-only"
+  }
 }

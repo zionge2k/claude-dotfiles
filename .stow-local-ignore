@@ -1,0 +1,20 @@
+# GNU Stow ignore list — .gitignore와 달리 stow는 이 파일로만 무시 대상을 안다.
+# 이 파일이 존재하면 stow 기본 무시목록을 "대체"하므로 .git 등 VCS 항목도 재명시한다.
+# 각 줄은 Perl 정규식. top-level 기준 상대경로(/로 시작)와 basename 양쪽에 매치된다.
+
+# --- VCS / stow 기본값 재명시 ---
+\.git
+\.gitignore
+
+# --- 런타임 쓰레기 (.gitignore와 동기화: stow가 홈으로 링크하면 안 되는 것) ---
+\.DS_Store
+\.playwright-mcp
+__pycache__
+scratch
+
+# --- repo 메타 파일 (배포 대상 아님 — 홈에 링크되면 안 됨) ---
+README\.md
+install\.sh
+\.stow-local-ignore
+\.secrets\.baseline
+\.pre-commit-config\.yaml

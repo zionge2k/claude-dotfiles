@@ -114,51 +114,54 @@ deploy_dotfiles() {
   mkdir -p "$HOME/.config/ghostty"
   mkdir -p "$HOME/.config/nvim/lua/plugins"
 
-  # Remove non-symlink terminal config files that would conflict with stow
-  local TERMINAL_FILES=(.tmux.conf .zshrc .zprofile)
-  for f in "${TERMINAL_FILES[@]}"; do
-    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && rm "$HOME/$f" && info "  Removed ~/$f (backed up)"
-  done
+  cd "$DOTFILES_DIR"
 
-  local TERMINAL_CONFIG_FILES=(.config/ghostty/config .config/starship.toml .config/nvim/lua/plugins/vim-tmux-navigator.lua .config/keybindings-guide.md)
-  for f in "${TERMINAL_CONFIG_FILES[@]}"; do
-    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && rm "$HOME/$f" && info "  Removed ~/$f (backed up)"
-  done
-
-  # Remove existing Claude config files/dirs that would conflict with stow
-  local STOW_ITEMS=(
-    CLAUDE.md settings.json keybindings.json code-review.yml
-    claude-watch-hook.sh README.md
-    "Prompt Enhancer.md" Prompt-Enhancer2.md
+  # ── 1. Clear ONLY non-symlink *real file* conflicts ──────────────────
+  # Single tracked files that may exist as real files on first migration.
+  # Safe to remove: backup_existing() already copied them. Directories are
+  # intentionally NOT rm'd here — see step 2 for why (the old dir rm was the
+  # root cause of the deploy-abort data loss: with --no-folding, dirs like
+  # agents/ are always real dirs, so a blind `rm -rf` fired on every re-run
+  # and relied on stow to recreate; a stow abort then wiped them permanently).
+  local REAL_FILE_CONFLICTS=(
+    .tmux.conf .zshrc .zprofile
+    .config/ghostty/config .config/starship.toml
+    .config/nvim/lua/plugins/vim-tmux-navigator.lua .config/keybindings-guide.md
+    .claude/CLAUDE.md .claude/settings.json .claude/keybindings.json
+    .claude/code-review.yml .claude/claude-watch-hook.sh .claude/README.md
+    ".claude/Prompt Enhancer.md" .claude/Prompt-Enhancer2.md
   )
-  local STOW_DIRS=(agents hooks docs templates)
-
-  for item in "${STOW_ITEMS[@]}"; do
-    [ -e "$CLAUDE_DIR/$item" ] && [ ! -L "$CLAUDE_DIR/$item" ] && rm "$CLAUDE_DIR/$item" 2>/dev/null || true
-  done
-  for dir in "${STOW_DIRS[@]}"; do
-    [ -d "$CLAUDE_DIR/$dir" ] && [ ! -L "$CLAUDE_DIR/$dir" ] && rm -rf "$CLAUDE_DIR/$dir" 2>/dev/null || true
+  for f in "${REAL_FILE_CONFLICTS[@]}"; do
+    [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ] && rm -f "$HOME/$f" && info "  Cleared real file ~/$f (backed up)"
   done
 
-  # Skills: dynamically detect from dotfiles repo and remove non-symlink conflicts
-  if [ -d "$DOTFILES_DIR/.claude/skills" ]; then
-    for skill_dir in "$DOTFILES_DIR/.claude/skills"/*/; do
-      skill_name="$(basename "$skill_dir")"
-      [ -d "$CLAUDE_DIR/skills/$skill_name" ] && [ ! -L "$CLAUDE_DIR/skills/$skill_name" ] && rm -rf "$CLAUDE_DIR/skills/$skill_name" 2>/dev/null || true
-    done
+  # ── 2. Pre-flight: verify stow can complete with NO conflicts ─────────
+  # `stow -R` (restow) manages its own symlink trees transactionally and is
+  # safe to run repeatedly. We dry-run it first; if ANY unexpected conflict
+  # remains (e.g. new runtime junk not yet in .stow-local-ignore), we abort
+  # BEFORE touching the live deployment — never destroy a working setup.
+  local PREFLIGHT
+  PREFLIGHT="$(stow -R --no-folding -n -t "$HOME" -v . 2>&1)" || true
+  if echo "$PREFLIGHT" | grep -qiE "conflict|aborted|cannot stow"; then
+    error "Stow pre-flight detected conflicts — aborting WITHOUT any changes:"
+    echo "$PREFLIGHT" | grep -iE "conflict|aborted|cannot stow|over existing" >&2
+    error "Resolve the targets above, or add them to .stow-local-ignore, then re-run."
+    exit 1
   fi
 
-  # Run stow with --no-folding to avoid symlinking entire directories
-  cd "$DOTFILES_DIR"
-  stow --no-folding -t "$HOME" -v .
+  # ── 3. Commit: restow (transactional; aborts cleanly on surprise) ─────
+  stow -R --no-folding -t "$HOME" -v .
 
-  # Make scripts executable
-  chmod +x "$CLAUDE_DIR/hooks/notify.sh" 2>/dev/null || true
-  chmod +x "$CLAUDE_DIR/claude-watch-hook.sh" 2>/dev/null || true
-  chmod +x "$CLAUDE_DIR/hooks/check-env-files.sh" 2>/dev/null || true
-  chmod +x "$CLAUDE_DIR/hooks/check-hardcoded-paths.sh" 2>/dev/null || true
-  chmod +x "$CLAUDE_DIR/hooks/check-sensitive-files.sh" 2>/dev/null || true
-  chmod +x "$CLAUDE_DIR/hooks/update-brewfile.sh" 2>/dev/null || true
+  # ── 4. Make hook/script symlinks executable (resolves through symlink) ─
+  local EXEC_SCRIPTS=(
+    hooks/notify.sh hooks/check-env-files.sh hooks/check-hardcoded-paths.sh
+    hooks/check-sensitive-files.sh hooks/update-brewfile.sh
+    hooks/log-bash-command.sh hooks/post-edit-check.sh
+    hooks/session-metrics.sh hooks/vis-serve.sh claude-watch-hook.sh
+  )
+  for s in "${EXEC_SCRIPTS[@]}"; do
+    chmod +x "$CLAUDE_DIR/$s" 2>/dev/null || true
+  done
 
   info "Dotfiles deployed successfully."
 }

@@ -202,4 +202,5 @@ During tasks, recognize information that would help do the task better and faste
 | Java/Spring Boot/LSP 작업 | `.claude/docs/LSP-RULES.md` |
 | Superpowers/brainstorming/TDD 워크플로우 | `.claude/docs/SUPERPOWERS.md` |
 | 작업 완료 전 검증 | `.claude/docs/SUPERPOWERS.md` (verification-before-completion) |
+| learning/explanatory 모드 응답 (교육 깊이 보정) | `.claude/docs/PROFICIENCY.md` — deep-teach는 ★Insight·code contribution↑, peer-level은 기초 생략 |
 </contextual_rules>

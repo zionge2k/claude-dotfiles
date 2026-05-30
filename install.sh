@@ -88,7 +88,7 @@ backup_existing() {
         claude-watch-hook.sh README.md
         "Prompt Enhancer.md" Prompt-Enhancer2.md
       )
-      local CONFIG_DIRS=(agents skills hooks docs)
+      local CONFIG_DIRS=(agents skills hooks docs templates)
 
       mkdir -p "$BACKUP_DIR/.claude"
       for item in "${CONFIG_ITEMS[@]}"; do
@@ -131,7 +131,7 @@ deploy_dotfiles() {
     claude-watch-hook.sh README.md
     "Prompt Enhancer.md" Prompt-Enhancer2.md
   )
-  local STOW_DIRS=(agents hooks docs)
+  local STOW_DIRS=(agents hooks docs templates)
 
   for item in "${STOW_ITEMS[@]}"; do
     [ -e "$CLAUDE_DIR/$item" ] && [ ! -L "$CLAUDE_DIR/$item" ] && rm "$CLAUDE_DIR/$item" 2>/dev/null || true

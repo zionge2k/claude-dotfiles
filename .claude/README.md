@@ -30,7 +30,7 @@ vis search "키워드" --rerank     정확도 높은 검색
 
 ## 프롬프트 팁
 - 끝에 `-u` → ultra-think 모드 (복잡한 설계/디버깅)
-- 서브에이전트는 Sonnet 4.5 (비용 절감)
+- 서브에이전트 기본 = Opus 4.8. 비용 작업만 `templates/delegation.md`로 Sonnet 4.6/Haiku 4.5 다운시프트
 
 ## 상세 가이드
 Obsidian → [[Claude-Code-설정-가이드]] (zion-vault/003-RESOURCES/)

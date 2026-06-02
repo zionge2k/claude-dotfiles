@@ -6,14 +6,13 @@
     "MAX_THINKING_TOKENS": "16000",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
     "BASH_MAX_OUTPUT_LENGTH": "1000000",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-5-20250929",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-8",
     "BASH_DEFAULT_TIMEOUT_MS": "120000",
     "BASH_MAX_TIMEOUT_MS": "600000",
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
-    "DOMEGGOOK_API_KEY": "50c5a4d5793d4397cf42d65b6d6901b9"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
   },
   "permissions": {
     "allow": [
@@ -35,6 +34,16 @@
       "Bash(dd if=/dev:*)"
     ],
     "defaultMode": "acceptEdits"
+  },
+  "skillOverrides": {
+    "brunch-writer": "user-invocable-only",
+    "sourcing-keyword-research": "user-invocable-only",
+    "weekly-newsletter": "user-invocable-only",
+    "weekly-claude-analytics": "user-invocable-only",
+    "lecture-prep": "user-invocable-only",
+    "knowledge-gap-researcher": "name-only",
+    "usage-pattern-analyzer": "name-only",
+    "project-time-tracker": "name-only"
   },
   "hooks": {
     "PreToolUse": [
@@ -187,18 +196,10 @@
       "연결고리 찾는 중"
     ]
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
-  "theme": "light",
+  "theme": "light-daltonized",
   "verbose": true,
-  "skillOverrides": {
-    "brunch-writer": "user-invocable-only",
-    "sourcing-keyword-research": "user-invocable-only",
-    "weekly-newsletter": "user-invocable-only",
-    "weekly-claude-analytics": "user-invocable-only",
-    "lecture-prep": "user-invocable-only",
-    "knowledge-gap-researcher": "name-only",
-    "usage-pattern-analyzer": "name-only",
-    "project-time-tracker": "name-only"
-  }
+  "teammateMode": "tmux",
+  "agentPushNotifEnabled": true
 }

@@ -6,33 +6,30 @@ alias dcl="docker compose -f docker-compose-local.yml"
 # SW Campus
 unalias sws 2>/dev/null
 sws() {
-  cd /Users/iseong/projects/software-campus/sw-campus-server
+  cd $HOME/projects/software-campus/sw-campus-server
   if [[ "$1" == "-x" ]]; then
     ./gradlew :sw-campus-api:bootRun --args="--spring.profiles.active=local" -x test -q
   else
     ./gradlew :sw-campus-api:bootRun --args="--spring.profiles.active=local" -q
   fi
 }
-alias swc='cd /Users/iseong/projects/software-campus/sw-campus-client && pnpm dev'
 
 # Ecommerce Shop
 unalias ess 2>/dev/null
 ess() {
-  cd /Users/iseong/projects/ecommerce-shop
+  cd $HOME/projects/ecommerce-shop
   if [[ "$1" == "-x" ]]; then
     ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -x test -q
   else
     ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -q
   fi
 }
-alias esc='cd /Users/iseong/projects/ecommerce-shop/ecommerce-frontend && npm run dev'
 
-# Claude Code - agent teams split-pane mode
-alias claude='claude --teammate-mode tmux'
+# Claude Code - agent teams split-pane mode (teammateMode lives in settings.json)
 alias cl='claude'
-alias cld='claude --dangerously-skip-permissions --teammate-mode tmux'
-alias cc-commit='claude --dangerously-skip-permissions --teammate-mode tmux -p "/commit" --allowedTools "Bash,Read,Grep"'
-alias cc-push='claude --dangerously-skip-permissions --teammate-mode tmux -p "/commit --push" --allowedTools "Bash,Read,Grep"'
+alias cld='claude --dangerously-skip-permissions'
+alias cc-commit='claude --dangerously-skip-permissions -p "/commit" --allowedTools "Bash,Read,Grep"'
+alias cc-push='claude --dangerously-skip-permissions -p "/commit --push" --allowedTools "Bash,Read,Grep"'
 alias plugins-cc='npx claude-code-templates@latest --plugins'
 alias chats-cc='npx claude-code-templates@latest --chats'
 alias clean-mac='npx mac-cleaner-cli'

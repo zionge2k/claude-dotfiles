@@ -3,28 +3,6 @@ export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 alias dcl="docker compose -f docker-compose-local.yml"
 
-# SW Campus
-unalias sws 2>/dev/null
-sws() {
-  cd $HOME/projects/software-campus/sw-campus-server
-  if [[ "$1" == "-x" ]]; then
-    ./gradlew :sw-campus-api:bootRun --args="--spring.profiles.active=local" -x test -q
-  else
-    ./gradlew :sw-campus-api:bootRun --args="--spring.profiles.active=local" -q
-  fi
-}
-
-# Ecommerce Shop
-unalias ess 2>/dev/null
-ess() {
-  cd $HOME/projects/ecommerce-shop
-  if [[ "$1" == "-x" ]]; then
-    ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -x test -q
-  else
-    ./gradlew :shop-api:bootRun --args="--spring.profiles.active=local" -q
-  fi
-}
-
 # Claude Code - agent teams split-pane mode (teammateMode lives in settings.json)
 alias cl='claude'
 alias cld='claude --dangerously-skip-permissions'

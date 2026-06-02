@@ -18,7 +18,19 @@
     "allow": [
       "Bash(npm run lint)",
       "Bash(npm run test:*)",
-      "WebFetch"
+      "WebFetch",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(ls:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(stat:*)",
+      "Bash(which:*)",
+      "Bash(ffprobe:*)"
     ],
     "deny": [
       "Bash(rm -rf /)",

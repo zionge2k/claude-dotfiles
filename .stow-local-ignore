@@ -18,3 +18,6 @@ install\.sh
 \.stow-local-ignore
 \.secrets\.baseline
 \.pre-commit-config\.yaml
+SECURITY\.md
+GITHUB-SECURITY-SETUP\.md
+ai-learnings\.md

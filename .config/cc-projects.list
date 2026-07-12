@@ -1,0 +1,19 @@
+# cc-projects.list — cj() jump targets. One path per line, ~ allowed.
+# Optional trailing @memo tag classifies the entry (default session: work).
+# Lines starting with # and blank lines are ignored. Edit freely.
+
+~/claude-dotfiles
+~/projects/automation_freestyle
+~/projects/automation_youtube
+~/projects/cafe24
+~/projects/domeggook-product-sourcing
+~/projects/ecommerce-keyword-analyzer
+~/projects/ecommerce-shop
+~/projects/google-seet-sender
+~/projects/kakaotalk-bulk-sender
+~/projects/models
+~/projects/naver-realestate-collector
+~/projects/playlist_auto_uploader
+~/projects/portfolio
+~/projects/soombi-links
+~/projects/soombineh.github.io

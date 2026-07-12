@@ -19,7 +19,8 @@
   홈에 같은 경로의 실물 파일이 있으면 conflict → 실물을 백업 후 restow.
   repo 루트 문서(SECURITY.md 등)는 `.stow-local-ignore` 등록 필수 (아니면 홈에 링크됨).
 - **teammateMode는 settings.json에 있음** → cld 등 alias에 `--teammate-mode` 플래그 불필요 (중복).
-- **claude/node는 Homebrew 설치** (/opt/homebrew/bin) → NVM lazy loading 안전.
+- **claude/node는 Homebrew 설치** (/opt/homebrew/bin). ~~NVM lazy loading 안전~~
+  → **오판이었음**: 아래 "셸 스냅샷과 함수 래퍼" 참조. nvm 미설치 상태라 블록 자체를 제거함.
 - pre-commit에 update-brewfile 훅은 **미등록** 상태이고 repo에 Brewfile 없음 —
   스크립트만 존재. 등록하려면 `.pre-commit-config.yaml`의 local hooks에 추가.
 - zsh alias는 함수 정의 시점에 확장됨 — `rm`을 alias→function으로 바꿀 때
@@ -47,3 +48,21 @@
   `tmux resize-window -A`로 개별 재채택. escape hatch로 `prefix+R` 바인딩 추가.
 - 주의: `resize-window`는 대상 window에 수동 크기 상태를 남길 수 있어
   글로벌 옵션 변경만으로는 기존 window가 복구되지 않음.
+
+## 셸 스냅샷과 함수 래퍼 — MCP 서버 사망 사건 (2026-07-12)
+
+- **Claude Code 셸 스냅샷은 `_언더스코어` 헬퍼 함수 정의를 제외**하고 일반 함수만 담음.
+  → `npx() { _load_nvm; npx "$@" }` 같은 래퍼는 스냅샷 안에서 `_load_nvm` 부재로
+  unfunction이 실행되지 못해 **자기 자신을 무한 재귀 호출** ("maximum nested
+  function level reached") → npx 기동 MCP 서버(playwright 등)·statusline 즉사.
+- 교훈 1: **.zshrc에서 실제 바이너리를 가리는(shadow) 함수는 self-contained로**
+  작성하고 원본 호출은 `command <name>`으로. `_헬퍼` 의존 금지.
+  (rm()이 안전한 이유: 자기완결 + `command trash` 호출)
+- 교훈 2: **upstream 패턴 이식 시 전제부터 검증** — NVM lazy는 upstream엔 nvm이
+  있어 유효했지만 이 머신엔 ~/.nvm 자체가 없었음. `which node`만 보고 안전
+  판정한 것이 오판의 원인.
+- 교훈 3: 스냅샷은 세션 시작 시 고정 → .zshrc 수정 후 **Claude Code 재시작**
+  (`claude --resume`) 필요. cj/ccps 등 `_헬퍼` 의존 함수도 스냅샷 셸에서는
+  동작 안 하지만(에러 후 종료), 바이너리를 가리지 않으므로 무해.
+- serena MCP는 npx가 아닌 **uvx로 기동** — playwright와 사인(死因)이 다를 수
+  있으므로 재시작 후에도 죽어 있으면 별도 진단할 것.

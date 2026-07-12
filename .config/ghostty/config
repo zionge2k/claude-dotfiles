@@ -29,6 +29,9 @@ background-opacity = 1
 
 # keybindings
 # TODO(linux): Replace cmd/super with ctrl or alt — cmd key is macOS only
+# Quick terminal toggle (system-wide via global:). Needs macOS Accessibility permission.
+# If this line is lost, quick terminal stops opening after reboot (known upstream issue).
+keybind = global:cmd+alt+6=toggle_quick_terminal
 keybind = cmd+s>r=reload_config
 keybind = cmd+s>x=close_surface
 keybind = cmd+s>n=new_window

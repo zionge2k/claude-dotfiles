@@ -6,7 +6,7 @@
     "MAX_THINKING_TOKENS": "16000",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
     "BASH_MAX_OUTPUT_LENGTH": "1000000",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-8",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6",
     "BASH_DEFAULT_TIMEOUT_MS": "120000",
     "BASH_MAX_TIMEOUT_MS": "600000",
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
@@ -120,6 +120,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/vis-serve.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start-context.sh"
           }
         ]
       }
@@ -209,9 +213,11 @@
     ]
   },
   "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "light-daltonized",
   "verbose": true,
   "teammateMode": "tmux",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "model": "claude-fable-5[1m]"
 }

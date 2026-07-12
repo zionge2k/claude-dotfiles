@@ -35,3 +35,15 @@
   커밋마다 `git show --stat`으로 파일 구성 검증할 것.
 - pre-commit은 unstaged 변경을 stash/restore함 — upstream에서 이 과정 중 alias 유실
   사고 이력 있음(23359fd). 멀티 커밋 후 워킹트리와 커밋본 diff로 무결성 확인 권장.
+
+## tmux window 절반 크기 latch (2026-07-12)
+
+- 증상: 클라이언트는 239칸인데 window 레이아웃이 119칸에 고정 → 오른쪽 미사용
+  영역이 "빈 pane"처럼 보임. Ghostty 창 복원 타이밍에 `window-size latest`가
+  일시적 절반 크기를 latch하며 발생, Ghostty 재시작 시 재발.
+- 진단법: `tmux list-clients`(클라이언트 크기) vs `tmux list-panes -a`(pane 크기)
+  비교. 단일 pane인데 클라이언트보다 작으면 latch 상태.
+- 해결: `set -g window-size largest`(신규 window 예방) + 기존 window는
+  `tmux resize-window -A`로 개별 재채택. escape hatch로 `prefix+R` 바인딩 추가.
+- 주의: `resize-window`는 대상 window에 수동 크기 상태를 남길 수 있어
+  글로벌 옵션 변경만으로는 기존 window가 복구되지 않음.

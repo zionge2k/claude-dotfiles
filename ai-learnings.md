@@ -24,3 +24,14 @@
   스크립트만 존재. 등록하려면 `.pre-commit-config.yaml`의 local hooks에 추가.
 - zsh alias는 함수 정의 시점에 확장됨 — `rm`을 alias→function으로 바꿀 때
   내부에서 진짜 rm이 필요한 함수(`y()` 등)는 `command rm`으로 명시할 것.
+
+## 멀티 커밋 시 pre-commit 함정 (2026-07-12)
+
+- `.pre-commit-config.yaml`이 **수정-unstaged 상태면 pre-commit이 모든 커밋을 거부**
+  ("Your pre-commit configuration is unstaged") → 커밋을 나눌 때 설정 파일 변경분을
+  **첫 커밋에 포함**할 것.
+- 셸에서 `git add A && git commit` 여러 줄을 이어 실행하면 커밋 실패 시
+  **staging이 다음 줄로 누적**되어 뒤 커밋이 전부 삼킴 → `set -e`로 즉시 중단시키고,
+  커밋마다 `git show --stat`으로 파일 구성 검증할 것.
+- pre-commit은 unstaged 변경을 stash/restore함 — upstream에서 이 과정 중 alias 유실
+  사고 이력 있음(23359fd). 멀티 커밋 후 워킹트리와 커밋본 diff로 무결성 확인 권장.

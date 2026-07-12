@@ -430,18 +430,11 @@ export ENABLE_TOOL_SEARCH=true
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-# --- NVM (lazy load — only loads when nvm/node/npm/npx is first used) ---
-# Homebrew node stays on PATH regardless; this only defers nvm.sh sourcing.
-export NVM_DIR="$HOME/.nvm"
-_load_nvm() {
-  unfunction nvm node npm npx 2>/dev/null
-  [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
-}
-nvm()  { _load_nvm; nvm  "$@"; }
-node() { _load_nvm; node "$@"; }
-npm()  { _load_nvm; npm  "$@"; }
-npx()  { _load_nvm; npx  "$@"; }
+# --- NVM: intentionally removed ---
+# nvm is not installed (~/.nvm absent); Homebrew node is canonical. Do NOT re-add
+# lazy-load wrappers: Claude Code shell snapshots strip _underscore helpers,
+# turning the wrappers into infinite recursion that kills npx-based MCP servers.
+# See ai-learnings.md. If nvm is ever needed, use the standard init block.
 
 # --- pyenv ---
 if command -v pyenv &>/dev/null; then

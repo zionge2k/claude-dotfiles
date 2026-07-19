@@ -48,6 +48,15 @@
   `tmux resize-window -A`로 개별 재채택. escape hatch로 `prefix+R` 바인딩 추가.
 - 주의: `resize-window`는 대상 window에 수동 크기 상태를 남길 수 있어
   글로벌 옵션 변경만으로는 기존 window가 복구되지 않음.
+- **후속 (2026-07-20)**: `window-size largest`로도 재발 — latch가 window가 아닌
+  **resurrect 복원 pane 레이아웃**에 남는 경로 발견 (window 239칸, pane 119칸).
+  continuum이 Ghostty 절반 크기 transient 시점에 복원하면 레이아웃이 절반 폭으로
+  고정되고, window만 largest로 커져 오른쪽이 dot-fill됨.
+  → `@resurrect-hook-post-restore-all`로 복원 직후 전 window에 `resize-window -A`
+  적용해 차단. 수동 복구는 `prefix+R`.
+- "tmux ls는 비었는데 진입하니 이전 창들이 있다"는 버그 아님 —
+  `@continuum-restore 'on'`이 서버 기동 시 `~/.local/share/tmux/resurrect/`
+  마지막 저장본을 자동 복원하는 정상 동작.
 
 ## 셸 스냅샷과 함수 래퍼 — MCP 서버 사망 사건 (2026-07-12)
 

@@ -212,7 +212,7 @@
       "연결고리 찾는 중"
     ]
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "light-daltonized",

@@ -218,6 +218,6 @@
   "theme": "light-daltonized",
   "verbose": true,
   "teammateMode": "tmux",
-  "agentPushNotifEnabled": true,
-  "model": "claude-fable-5[1m]"
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
 }

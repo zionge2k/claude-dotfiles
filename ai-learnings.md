@@ -2,6 +2,58 @@
 
 작업 중 발견한, 다음에 같은 작업을 더 빠르고 정확하게 하기 위한 기록.
 
+## YouTube 트랜스크립트 수집: 3단계 fallback 체인 (2026-07-25)
+
+- `obsidian-summarize-youtube` 스킬의 기본 경로인 `youtube-transcript-api`는
+  **IP 차단(RequestBlocked)으로 실패**하는 경우가 많음. 스킬 문서만 따라가면 여기서 막힘.
+- 검증된 fallback 순서:
+  1. `youtube-transcript-api` (스킬 기본) → IP ban 시 실패
+  2. `yt-dlp` 맨몸 → `HTTP 429` + "Sign in to confirm you're not a bot"으로 실패
+  3. **`yt-dlp --cookies-from-browser chrome`** → 성공 (498개 쿠키 추출, deno로 JS challenge 해결)
+- **함정: `--print`는 암묵적으로 `--simulate`를 켠다.** 메타데이터와 자막을 한 명령으로 받으려
+  `--print`를 붙이면 자막 파일이 **조용히 저장되지 않음**. 메타데이터용/다운로드용 명령을 분리할 것.
+- 자막 언어는 `--list-subs`로 먼저 확인. 한국어 영상은 `ko` 자동 생성 자막이 있음.
+- **자동 생성 자막은 롤링 윈도우 방식**이라 같은 문장이 점진 누적됨(143KB → 정제 후 23KB).
+  단순 인접 중복 제거로는 부족하고, "이전 줄이 현재 줄의 부분 문자열이면 교체" 로직 필요:
+  ```python
+  if clean and (t in clean[-1][1]): continue          # 현재가 이전에 포함 → 버림
+  if clean and clean[-1][1] in t: clean[-1] = (ts, t) # 이전이 현재에 포함 → 교체
+  ```
+- 한국어 자동 자막은 **기술 고유명사를 음차 오인식**함. 문맥 교정 필수 사례:
+  오퍼스→Opus, 페이블→Fable, 솔/쏘리→Sol, 클로스→Claude, 미토스→Mythos,
+  한네스→harness, 언트라 코드→ultracode, 웹자인→웹디자인.
+  요약 문서의 Uncertainty Map에 교정 목록을 남길 것.
+- zsh에는 `timeout`이 없음(coreutils 미설치). 루프 안에서 `timeout` 쓰지 말 것.
+
+## vis tag는 명세 태그를 덮어쓴다 (2026-07-25, 재확인)
+
+- `vis tag` 실행 시 스킬/문서 명세로 부여한 태그 중 일부만 살아남고
+  `newsletter`, `weekly-digest`, `daily` 같은 **노이즈 태그가 추가**됨.
+  원인: vault 기존 문서들의 오염된 태그를 공출현 패턴으로 재학습하는 되먹임 구조.
+- **더 심각한 실패 모드: 주제 자체를 오분류함.** Gemini 딥 리서치 영상 문서에
+  `ai/tools/claude/skills`를 붙이고 `AI/tools/gemini`·`AI/features/deep-research`를
+  **전부 삭제**함. vault에 Claude 문서가 압도적으로 많아 임베딩이 그쪽으로 끌린 것으로 추정.
+  → **비(非)Claude 주제 문서일수록 `vis tag` 결과를 반드시 검토**할 것.
+- 대응: `vis tag` → `vis add-related-docs` 순으로 실행한 뒤 **마지막에 프론트매터 tags를 수동 복원**.
+  (add-related-docs가 프론트매터를 다시 건드릴 수 있으므로 복원은 반드시 맨 마지막)
+- 근본 해결은 기존 changelog 문서들의 태그 일괄 정리. 미착수.
+
+## weekly-claude-analytics: 세션 파일 ≠ 작업 단위 (2026-07-25, W30)
+
+- `~/.claude/projects/<proj>/` 직속 `*.jsonl`이 top-level 세션이지만, W30부터
+  **agent-team 워커**(첫 user 메시지가 `<teammate-message`로 시작)와 **cron 원샷**
+  (msgs≤2·활성≤10m, stock 브리핑 생성기)이 top-level 파일로 대량 생성됨.
+  W30: 71개 중 실작업 11개뿐. 분류 없이 세션 수·프로젝트 시간을 읽으면 오독.
+- subagent 로그는 `<proj>/<sessionId>/subagents/*.jsonl`. `memory/`·scratchpad
+  프로젝트 디렉토리는 제외할 것.
+- 활성 시간 기준: 인접 timestamp 간격 <30m 합산 (W19부터 동일). raw span 사용 금지
+  (켜둔 세션이 68h까지 부풀음). 주간 경계는 이벤트 발생일 기준으로 클립.
+- Jira 정규식 `[A-Z]{2,10}-\d+`는 `UTF-8`·`SHA-256`·`RTX-4060`·`AI-7`(Ryzen) 등
+  기술 용어 오탐이 전부라 수동 검증 필수.
+- 파싱 스크립트 2단계 구성이 유효: stage1(jsonl→세션별 JSON 덤프) + stage2(분류·집계).
+  W30 실행본: `/tmp/weekly_claude_analytics.py`, `/tmp/w30_aggregate.py` (일회성, 삭제됨 —
+  구조는 이 항목과 W30 리포트 메모 참조).
+
 ## upstream(msbaek/dotfiles) 비교·이식 절차 (2026-07-12)
 
 - 두 저장소는 **git 히스토리가 독립적** (root commit 다름). `git diff upstream` 불가 —

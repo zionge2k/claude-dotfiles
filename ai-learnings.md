@@ -89,26 +89,53 @@
 - pre-commit은 unstaged 변경을 stash/restore함 — upstream에서 이 과정 중 alias 유실
   사고 이력 있음(23359fd). 멀티 커밋 후 워킹트리와 커밋본 diff로 무결성 확인 권장.
 
-## tmux window 절반 크기 latch (2026-07-12)
+## tmux 창 크기 고정 — 원인은 resize-window (2026-07-27 확정)
 
-- 증상: 클라이언트는 239칸인데 window 레이아웃이 119칸에 고정 → 오른쪽 미사용
-  영역이 "빈 pane"처럼 보임. Ghostty 창 복원 타이밍에 `window-size latest`가
-  일시적 절반 크기를 latch하며 발생, Ghostty 재시작 시 재발.
-- 진단법: `tmux list-clients`(클라이언트 크기) vs `tmux list-panes -a`(pane 크기)
-  비교. 단일 pane인데 클라이언트보다 작으면 latch 상태.
-- 해결: `set -g window-size largest`(신규 window 예방) + 기존 window는
-  `tmux resize-window -A`로 개별 재채택. escape hatch로 `prefix+R` 바인딩 추가.
-- 주의: `resize-window`는 대상 window에 수동 크기 상태를 남길 수 있어
-  글로벌 옵션 변경만으로는 기존 window가 복구되지 않음.
-- **후속 (2026-07-20)**: `window-size largest`로도 재발 — latch가 window가 아닌
-  **resurrect 복원 pane 레이아웃**에 남는 경로 발견 (window 239칸, pane 119칸).
-  continuum이 Ghostty 절반 크기 transient 시점에 복원하면 레이아웃이 절반 폭으로
-  고정되고, window만 largest로 커져 오른쪽이 dot-fill됨.
-  → `@resurrect-hook-post-restore-all`로 복원 직후 전 window에 `resize-window -A`
-  적용해 차단. 수동 복구는 `prefix+R`.
-- "tmux ls는 비었는데 진입하니 이전 창들이 있다"는 버그 아님 —
+**철칙: 자동화(훅·스크립트)에서 `tmux resize-window`를 절대 호출하지 말 것.**
+`-A` 유무·인자 형태와 무관하게 **모든** `resize-window` 호출은 대상 window에
+`window-size manual`을 즉시 기록하며(man tmux 명시), 그 window는 그 순간부터
+전역 `window-size largest`를 **영구히 상속하지 않는다**. 즉 이 명령은
+"클라이언트 크기로 동기화"가 아니라 **"그 순간 크기로 박제"**다.
+
+- 증상(양방향): 터미널 > 창이면 남는 영역이 점(`.`)으로 채워지고, 터미널 < 창이면
+  내용이 리플로우되지 않고 잘린다. 어느 쪽이든 터미널 리사이즈를 창이 안 따라온다.
+- 진단: `tmux show-options -w -t <win> window-size`.
+  `manual`이 나오면 박제 상태. 비어 있으면 정상(전역 상속).
+  창별 일괄 확인은 `list-windows -a` 돌면서 위 명령 실행.
+- 복구(서버 재시작 불필요): `tmux set-option -uwt <win> window-size`.
+  서버에 남은 훅 옵션은 `tmux set-option -gu @resurrect-hook-post-restore-all`.
+  (`-gu` 후 조회 시 `invalid option`은 정상 삭제됨을 뜻함)
+- **설정 파일에서 줄을 지워도 실행 중 서버의 옵션은 안 사라진다.** `prefix+r`
+  리로드로도 안 된다. 위 `-u`/`-gu`로 명시 삭제하거나 서버를 재시작해야 한다.
+- escape hatch를 둘 거면 반드시 manual을 즉시 털 것:
+  `bind R resize-window -A \; set-option -uw window-size \; display-message ...`
+
+### 실측 검증 (격리 소켓 `tmux -L`)
+- `resize-window` 호출 → 즉시 `window-size manual` 기록 (`-A` 유무 무관)
+- manual 창(160x40) vs 비설정 창(239x43) 동시 비교 → manual 창만 추종 안 함
+- `select-layout`은 manual을 유발하지 **않음** → resurrect 복원 경로는 무죄
+- `set-option -uw` → manual 해제되고 전역 largest 재상속 확인
+
+### 실패한 수정 이력 (반복 금지)
+- 2026-07-12: `prefix+R`에 `resize-window -A` 바인딩. 이때 이미 "수동 크기 상태를
+  남긴다"고 기록했으나 **경고와 해결책을 따로 적어둔 탓에** 8일 뒤 스스로 위반.
+- 2026-07-20: "pane 레벨 latch"로 오진하고 `@resurrect-hook-post-restore-all`에
+  `resize-window -A`를 **전 window 자동 실행**으로 승격. **이 훅이 다음 사건의 직접
+  원인.** 수동으로 가끔 밟던 지뢰를 복원할 때마다 자동으로 밟게 만든 셈.
+- 2026-07-24: 복원 시 창 3개가 239칸 중 119칸+manual로 박제, 사흘간 자가 복구 불가.
+  같은 세션의 stock 창만 멀쩡했던 이유는 훅 실행 7시간 뒤 수동 생성되어 대상이
+  아니었기 때문(pane PID `ps -o lstart=`로 확인). **"고칠수록 나빠진" 사례.**
+- 2026-07-27: 훅 제거 + `bind R`에 `-uw` 추가로 종결. 커밋 `245fa67`.
+
+### 미확정
+- 복원 시점 클라이언트가 왜 하필 119칸(=239의 절반)이었는지는 당시 로그가 없어
+  확정 불가. Ghostty의 macOS 창 복원 비동기 타이밍(continuum은 `sleep 1`만 대기)이
+  유력하나 미측정. **다만 manual만 안 남기면 119의 출처와 무관하게 자동 회복된다.**
+
+### 관련 (버그 아님)
+- "tmux ls는 비었는데 진입하니 이전 창들이 있다"는 정상 동작 —
   `@continuum-restore 'on'`이 서버 기동 시 `~/.local/share/tmux/resurrect/`
-  마지막 저장본을 자동 복원하는 정상 동작.
+  마지막 저장본을 자동 복원하는 것.
 
 ## 셸 스냅샷과 함수 래퍼 — MCP 서버 사망 사건 (2026-07-12)
 

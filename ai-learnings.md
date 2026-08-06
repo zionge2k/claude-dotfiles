@@ -72,8 +72,18 @@
 - Jira 정규식 `[A-Z]{2,10}-\d+`는 `UTF-8`·`SHA-256`·`RTX-4060`·`AI-7`(Ryzen) 등
   기술 용어 오탐이 전부라 수동 검증 필수.
 - 파싱 스크립트 2단계 구성이 유효: stage1(jsonl→세션별 JSON 덤프) + stage2(분류·집계).
-  W30 실행본: `/tmp/weekly_claude_analytics.py`, `/tmp/w30_aggregate.py` (일회성, 삭제됨 —
-  구조는 이 항목과 W30 리포트 메모 참조).
+  **W31에서 영속화 완료**: `~/.claude/skills/weekly-claude-analytics/scripts/wk_analytics.py`
+  + `wk_classify.py`. 상단 `WEEK_START`/`NOW` 상수만 바꿔 재실행하면 됨.
+- **주간 필터는 파일 mtime이 아니라 레코드 timestamp로 할 것.** 지난주 세션이 이번 주에
+  한 줄만 추가돼도 mtime은 이번 주가 되어 span·활성이 통째로 딸려 들어온다.
+- **함정: 세션별 파일 목록을 `[:N]`으로 잘라 저장한 뒤 union하면 고유 파일 수가 조용히
+  과소 집계된다** (W31: 195 vs 실제 222). 절단한 컬렉션으로 파생 지표를 만들지 말 것.
+- **무인화된 프로젝트는 활성 시간에 안 잡힌다.** W31 stock은 8%였지만 발행 저장소
+  (`~/projects/portfolio`)에 브리핑 커밋 13건이 올라갔다. 프로젝트별 시간과 함께
+  **각 저장소의 주간 커밋 수**(`git log --since=<월요일> --oneline | wc -l`)를 볼 것.
+- **agent-team 지표(Agent·SendMessage) 하락 = 오케스트레이션 퇴행 아님.** 감각 판정
+  비중이 높은 주(콘텐츠 검수 등)에는 위임 가능한 일 자체가 없어 자연히 죽고,
+  대신 AskUserQuestion·playwright가 뛴다. W30→W31이 이 케이스.
 
 ## upstream(msbaek/dotfiles) 비교·이식 절차 (2026-07-12)
 

@@ -36,7 +36,28 @@
   → **비(非)Claude 주제 문서일수록 `vis tag` 결과를 반드시 검토**할 것.
 - 대응: `vis tag` → `vis add-related-docs` 순으로 실행한 뒤 **마지막에 프론트매터 tags를 수동 복원**.
   (add-related-docs가 프론트매터를 다시 건드릴 수 있으므로 복원은 반드시 맨 마지막)
+- **2026-08-02, 최악의 실패 모드 확인: 태그를 전부 삭제한다.** 실행 로그에
+  `발견된 파일: 0개` / `태그 학습 완료: 0개 태그`가 찍히면 vis가 vault를 빈 디렉토리로
+  인식한 것이고, 이때 `vis tag`는 **기존 태그 6개를 지우고 0개를 기록**한다
+  (프론트매터에 빈 `tags:`만 남고, 위치도 맨 아래로 이동). 종료 코드는 `✅ 성공`이라
+  **결과만 보면 정상으로 착각**한다. 이어지는 `add-related-docs`는 `❌ 인덱스 구축 실패`로 죽는다.
+- → **`vis` 실행 시 로그의 "발견된 파일" 개수를 먼저 확인**할 것. 0이면 즉시 중단하고
+  아래 TCC 항목을 의심할 것. 원인은 vis가 아니라 실행 환경일 가능성이 높다.
 - 근본 해결은 기존 changelog 문서들의 태그 일괄 정리. 미착수.
+
+## Claude Code의 Bash는 ~/Documents(TCC 보호 영역)에 접근 못 한다 (2026-08-02)
+
+- macOS TCC는 Claude Code **앱 본체**에만 Documents 권한을 준다.
+  `Bash` 도구가 띄우는 **하위 프로세스에는 상속되지 않는다**:
+  - `Read` / `Write` / `Edit` 도구 → obsidian vault 읽기·쓰기 **성공**
+  - `Bash`의 `ls` / `find` / `grep` / `vis` → `Operation not permitted`,
+    `Permission denied - code: 13`
+  - **`dangerouslyDisableSandbox: true`로도 뚫리지 않음** — 샌드박스가 아니라 OS 권한 계층이다.
+- **증상이 조용한 게 함정.** 에러가 아니라 "0개 발견", "no matches found"로 나와
+  빈 vault처럼 보인다. 위 `vis tag` 태그 전멸 사고의 직접 원인.
+- 대응: vault 파일 조작은 **Read/Write/Edit 도구로** 하고, `vis` 같은 CLI는
+  **사용자가 터미널에서 직접 실행**하도록 안내할 것(프롬프트에 `!vis tag ...`).
+  근본 해결은 시스템 설정 > 개인정보 보호 및 보안 > 전체 디스크 접근 권한 등록.
 
 ## weekly-claude-analytics: 세션 파일 ≠ 작업 단위 (2026-07-25, W30)
 

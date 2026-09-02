@@ -67,9 +67,12 @@
   (`~/.local/pipx/venvs/vault-intelligence/bin/python`). 재설치 불필요.
 - **재검증(2026-08-14, Krea 2 문서)**: 명세 태그 6개 전부 생존, 파일 diff **0바이트**.
   CLI가 "새 태그"로 `ai/tools/claude-code/automation`(주제 무관 노이즈)을 출력했지만
-  **고신뢰도 목록에서 빠져 파일에는 기록되지 않았다** → `min_add_confidence` 필터가
-  의도대로 동작 중. **CLI의 "생성 태그" 출력 ≠ 실제 기록분**이니 놀라지 말 것.
+  고신뢰도 목록에서 빠져 파일에는 기록되지 않았다.
   (구 메모리 "vis tag 후 프론트매터 수동 복원 필요"는 폐기된 정보다.)
+- **⚠️ 위 재검증 결론은 2026-09-02에 뒤집혔다.** "CLI 출력 ≠ 실제 기록분"은 **일반 법칙이 아니라
+  그날 그 문서의 우연**이었다. 09-02 changelog 문서에서는 CLI가 출력한 5개가 **그대로 기록됐다**.
+  `min_add_confidence` 필터는 지금도 살아 있다(`semantic_tagger.py:382`) — 통과한 쪽이 문제다.
+  아래 "vis tag 오탐의 근본 원인" 절 참조.
 
 ### 원인 추적 기록 (배제된 가설 — 재조사 방지용)
 
@@ -401,3 +404,63 @@
 - **`find -newermt "YYYY-MM-DD" ! -newermt "YYYY-MM-DD"`가 `stat`+`awk` 조합보다 안전하다**
   (macOS의 `find`는 GNU식 `-newermt`를 지원한다). 단 **종료 경계는 배타적**이라
   마지막 날을 포함하려면 `! -newermt "다음날"`로 써야 한다.
+
+## claude-updates 스킬: changelog 수집·태깅 함정 (2026-09-02)
+
+- **Playwright 스냅샷은 컨텍스트에 못 올린다.** `browser_snapshot`으로 받은 changelog 페이지는
+  1,306,713자 / 18,380줄이라 자동으로 파일로 떨어진다. 전체를 읽지 말고 최신 릴리스만
+  `grep -n "2\.1\.2[0-9][0-9]"`로 위치를 잡아 `sed -n '160,600p'` 식으로 상단만 잘라낼 것.
+- **스냅샷의 가격 표기는 MathML로 깨진다.** `$10/$50 per Mtok`이 접근성 트리에서
+  `"10" "/" "10/" "50 per Mtok"`으로 분해돼 나온다. 숫자·기호가 섞인 항목은
+  `curl -sL https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`로
+  원문 마크다운 교차검증 필수. (docs 페이지는 이 파일을 렌더링한 것)
+- **`vis tag` 실행 후 반드시 frontmatter를 검증할 것.** 2026-09-02 실행 시
+  `newsletter`, `weekly-digest`, `daily`, `2-1-114`, `2-1-149` 5개가 **실제로 기록됐다**.
+  동일 시리즈 문서는 canonical 태그 3개만 유지
+  (`tools/claude-code/changelog`, `tools/claude-code/updates`, `tools/ai-tools/release-notes`).
+- **frontmatter만 뽑을 때 `sed -n '/^tags:/,/^[a-z_]*:/p'`는 틀린다.** 본문에도 `  - 태그:` 로
+  시작하는 줄(add-related-docs 출력)이 있어 범위가 본문까지 흘러간다. 반드시 첫 `---` 블록으로 한정:
+  ```bash
+  awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm' "$F"
+  ```
+- **`vis add-related-docs`가 표시하는 관련 문서의 태그는 신뢰할 수 없다.** 실제 frontmatter에는
+  canonical 태그 3개뿐인데 `1의`, `2-1-114`, `2-1-149`로 표시된다. 별도 인덱스/캐시를 읽는 것으로 추정.
+  링크 추천 자체(유사도 순 changelog 문서들)는 정확했다.
+- **볼트 정리본 갭 확인은 `sort -V` 필수.** `ls | grep Changelog | sort -V | tail`.
+  단순 `sort`는 `2.1.98 > 2.1.220`으로 잘못 정렬한다.
+
+### vis tag 오탐의 근본 원인 — 레거시 오염이 스스로를 재생산한다 (2026-09-02 확정)
+
+`semantic_tagger.py:366-374`의 신뢰도 공식은 다음과 같다:
+
+```python
+confidence = similarity_to_existing[tag] + 0.1 * (매칭된 key_concepts 수)   # cap 1.0
+```
+
+**`similarity_to_existing`이 "기존 vault 태그 corpus"를 기준으로 계산된다는 게 핵심이다.**
+corpus가 오염돼 있으면 오염 태그가 높은 점수를 받고, 그 결과 새 문서가 또 오염되어
+카운트가 올라가고, 다음 문서의 점수가 더 높아진다. **되먹임 구조다.**
+
+실측 (vault 268개 md, frontmatter 기준):
+
+| 태그 | 총계 | 정당한 위치 | 오염된 위치 |
+|---|---|---|---|
+| `daily` | 44 | `notes/dailies/` 32 | **`003-RESOURCES/` 11** |
+| `newsletter` | 36 | `newsletters/` 20 | **`003-RESOURCES/` 15** |
+| `weekly-digest` | 36 | `newsletters/` 20 | **`003-RESOURCES/` 15** |
+
+이 3개가 **vault 최다 태그 1·2·3위**다. 정당한 `tools/claude-code/changelog`(33)보다 많다.
+데일리노트와 뉴스레터가 정상적으로 쌓인 결과 다수파가 됐고, 그 다수성 자체가
+"한국어 기술 문서"면 무엇에나 붙는 힘이 됐다.
+
+- **`min_add_confidence`(0.7) 상향은 해법이 아니다.** 컷오프는 "진짜 흔한 태그"와
+  "오염돼서 흔해진 태그"를 구분할 수 없다. 08-06에 필터를 넣고도 09-02에 같은 3개가
+  다시 통과한 이유가 이것이다.
+- **해법은 레거시 오염 제거다.** 08-06 기록의 "기존 문서 누적 노이즈는 정리되지 않았다
+  (일괄 정리 미착수)" 항목이 4주 뒤 재발의 직접 원인이 됐다. **오염이 폴더 경계와 정확히
+  일치**하므로 안전하게 걷어낼 수 있다: `003-RESOURCES/`에서 이 3개 태그만 제거하고
+  `notes/dailies/`·`newsletters/`는 그대로 둔다.
+- `2-1-114`/`2-1-149`(각 2개 문서)는 아직 소수라 `similarity`가 아니라 **`concept_score`
+  경로**로 통과한 것으로 보인다. 0.1 × 개념 수는 상한 없이 누적되어 **개념 7개만 겹치면
+  유사도 0이어도 컷오프를 넘는다.** 방치하면 changelog 문서마다 자기 버전 번호를 심어
+  같은 되먹임에 올라탄다.

@@ -45,8 +45,9 @@
       "Bash(mkfs:*)",
       "Bash(dd if=/dev:*)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "auto"
   },
+  "model": "claude-fable-5-1[1m]",
   "skillOverrides": {
     "brunch-writer": "user-invocable-only",
     "sourcing-keyword-research": "user-invocable-only",

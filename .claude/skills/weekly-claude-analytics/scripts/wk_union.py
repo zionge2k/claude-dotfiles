@@ -19,14 +19,19 @@ IDLE = timedelta(minutes=30)
 ROOT = os.path.expanduser("~/.claude/projects")
 
 
-def _env_dt(name):
-    v = os.environ[name]
+def _env_dt(name, fallback):
+    """U_START/U_END win, but fall back to the WK_* pair wk_analytics.py used.
+    Defining the window twice under different names let the summed and merged
+    numbers describe different windows without ever erroring."""
+    v = os.environ.get(name) or os.environ.get(fallback)
+    if not v:
+        raise SystemExit(f"set {name} (or {fallback}) — e.g. 2026-08-15T08:00")
     if len(v) == 10:
         v += "T00:00"
     return datetime.fromisoformat(v).replace(tzinfo=KST)
 
 
-WS, NOW = _env_dt("U_START"), _env_dt("U_END")
+WS, NOW = _env_dt("U_START", "WK_START"), _env_dt("U_END", "WK_END")
 SESSIONS = json.load(open(os.environ.get("WK_OUT", "/tmp/wk_sessions.json")))
 # only top-level files that the analytics pass already accepted for this window
 keep = {s["path"] for s in SESSIONS if not s["sub"]}

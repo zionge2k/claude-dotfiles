@@ -25,12 +25,27 @@ def cls(s):
 buckets = defaultdict(list)
 for s in top: buckets[cls(s)].append(s)
 
+SCRATCH_RE = re.compile(r"^(/private)?/tmp/")
+
+
+def _files(v):
+    """Union, not sum. Summing per-session n_files double-counts any file edited
+    in more than one session — the exact sum/union confusion wk_analytics.py
+    warns about for s["files"]. Use the untruncated _all_files set."""
+    u = set()
+    for x in v:
+        u.update(x.get("_all_files") or x.get("files") or [])
+    scr = {f for f in u if SCRATCH_RE.match(f)}
+    return len(u) - len(scr), len(scr)
+
+
 print("=== classification (top-level) ===")
 for k in ["real", "worker", "cron", "meta"]:
     v = buckets[k]
+    prod, scr = _files(v)
     print(f"{k:8s} n={len(v):3d} active={fmt(sum(x['active_s'] for x in v)):>9s} "
           f"E+W={sum(x['tools'].get('Edit',0)+x['tools'].get('Write',0) for x in v):5d} "
-          f"files={sum(x['n_files'] for x in v)} (scratch={sum(x.get('n_files_scratch',0) for x in v)})")
+          f"files={prod + scr} (product={prod} scratch={scr})")
 
 print("\n=== REAL sessions ===")
 for s in sorted(buckets["real"], key=lambda x: x["start_wk"]):

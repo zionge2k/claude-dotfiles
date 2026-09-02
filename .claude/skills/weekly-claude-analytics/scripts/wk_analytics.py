@@ -89,15 +89,25 @@ for path in glob.glob(os.path.join(ROOT, "*", "*.jsonl")) + glob.glob(os.path.jo
                     c = msg.get("content")
                     txt = text_of(c)
                     if txt and not txt.startswith("<system-reminder"):
-                        user_msgs += 1
+                        # W36: volume metrics MUST be windowed like tools/files.
+                        # A session is kept if it has *any* in-week event, so an
+                        # unguarded counter dumps the session's whole history into
+                        # this week (W34: 1 of 64 sessions carried 9% of all
+                        # assistant messages this way, skewing the model table).
+                        if inwk:
+                            user_msgs += 1
+                        # first/real_prompt stay UNwindowed on purpose: they identify
+                        # what the session *is* (cron/meta marks, narrative), not how
+                        # much of it happened this week.
                         if first_prompt is None:
                             first_prompt = txt[:600]
                         if real_prompt is None and not txt.lstrip().startswith(SKIP_PREFIX):
                             real_prompt = txt[:600]
                 if typ == "assistant":
-                    asst_msgs += 1
-                    if msg.get("model"):
-                        models[msg["model"]] += 1
+                    if inwk:
+                        asst_msgs += 1
+                        if msg.get("model"):
+                            models[msg["model"]] += 1
                     for b in (msg.get("content") or []):
                         if isinstance(b, dict) and b.get("type") == "tool_use":
                             name = b.get("name", "?")
@@ -120,8 +130,13 @@ for path in glob.glob(os.path.join(ROOT, "*", "*.jsonl")) + glob.glob(os.path.jo
     for a, b in zip(ts_all, ts_all[1:]):
         gap = b - a
         if gap < IDLE and gap.total_seconds() > 0 and WEEK_START <= b < NOW:
-            active += gap.total_seconds()
-            per_day[b.date().isoformat()] += gap.total_seconds()
+            # Clamp the leading edge: a gap straddling the window start elapsed
+            # mostly *before* this week. wk_union.py already clamps with max(a, WS);
+            # without this the two headline numbers disagree by up to IDLE
+            # (30 min) per boundary-crossing session.
+            secs = (b - max(a, WEEK_START)).total_seconds()
+            active += secs
+            per_day[b.date().isoformat()] += secs
     sessions.append(dict(
         path=path, proj=proj, sub=is_sub,
         start=min(ts_all).isoformat(), start_wk=min(ts_week).isoformat(),

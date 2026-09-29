@@ -149,6 +149,20 @@ To take advantage of subagent orchestration:
 3. Adjust conservativeness if needed: Only delegate to subagents when the task clearly benefits from a separate agent with a new context window.
    </subagent_orchestration>
 
+<subagent_model_selection>
+서브에이전트 호출 시 `model` 선택 (기본값은 `CLAUDE_CODE_SUBAGENT_MODEL=sonnet`):
+
+| 작업 성격 | model |
+|----------|-------|
+| 조사·수집·구현·번역·한국어 글쓰기 | 지정 안 함 (sonnet) |
+| 설계 판단, 코드 리뷰, 근본 원인 분석 | `opus` |
+| 정형 추출·단순 변환 (판단·요약 없음) | `haiku` |
+
+- Sonnet 결과가 부족하면 같은 모델로 재시도하거나 effort를 올리지 말고 `opus`로 재위임.
+- Sonnet에 `max` effort 사용 금지 (Opus보다 느리고 결과도 낮음). 상한은 `xhigh`.
+- 요약·분석처럼 해석이 들어가는 작업에 `haiku` 사용 금지.
+</subagent_model_selection>
+
 ### Communication
 
 Korean by default. Respect user's tool choices.

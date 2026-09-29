@@ -136,7 +136,7 @@ OUTPUT_FILE="$HOME/Documents/zion-vault/newsletters/${WEEK_NUM}-newsletter.md"
 
 > **중요**: 아래 3개의 Task를 **단일 메시지에서 동시에 호출**하여 병렬 실행합니다.
 > 각 서브 에이전트는 분석 결과를 **마크다운 형식의 텍스트**로 반환합니다.
-> 비용/속도 최적화를 위해 **haiku 모델**을 사용합니다.
+> 해석이 들어가는 분석 작업이므로 **sonnet 모델**을 사용합니다 (haiku는 주차 혼입·필터 오독 이력 있음).
 
 ---
 
@@ -147,7 +147,7 @@ OUTPUT_FILE="$HOME/Documents/zion-vault/newsletters/${WEEK_NUM}-newsletter.md"
 |---------|-----|
 | description | "Daily Notes 분석" |
 | subagent_type | "general-purpose" |
-| model | "haiku" |
+| model | "sonnet" |
 
 **프롬프트 (SATURDAY, FRIDAY, NEXT_DAY 치환 필요):**
 
@@ -199,7 +199,7 @@ OUTPUT_FILE="$HOME/Documents/zion-vault/newsletters/${WEEK_NUM}-newsletter.md"
 |---------|-----|
 | description | "Coffee-time 분석" |
 | subagent_type | "general-purpose" |
-| model | "haiku" |
+| model | "sonnet" |
 
 **프롬프트 (SATURDAY, FRIDAY, NEXT_DAY 치환 필요):**
 
@@ -253,7 +253,7 @@ OUTPUT_FILE="$HOME/Documents/zion-vault/newsletters/${WEEK_NUM}-newsletter.md"
 |---------|-----|
 | description | "주간 문서 분석" |
 | subagent_type | "general-purpose" |
-| model | "haiku" |
+| model | "sonnet" |
 
 **프롬프트 (SATURDAY, FRIDAY, NEXT_DAY 치환 필요):**
 
@@ -390,7 +390,7 @@ period: {SATURDAY} ~ {FRIDAY}
 
 1. **단일 응답에서 3개 Task 동시 호출**: 메인 에이전트는 Phase 2에서 하나의 응답에 3개의 Task 도구 호출을 포함해야 합니다.
 
-2. **haiku 모델 사용**: 비용과 속도 최적화를 위해 서브 에이전트는 haiku 모델을 사용합니다.
+2. **sonnet 모델 사용**: 분석·요약은 해석이 필요하므로 서브 에이전트는 sonnet 모델을 사용합니다.
 
 3. **결과만 반환**: 각 서브 에이전트는 마크다운 형식의 분석 결과 텍스트만 반환합니다.
 

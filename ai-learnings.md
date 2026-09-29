@@ -603,3 +603,82 @@ corpus가 오염돼 있으면 오염 태그가 높은 점수를 받고, 그 결�
   W38부터 섹션 제거 결정됨. 문서 분석기는 mtime 후보에 `created_at` frontmatter 검사를
   덧붙여야 태그 정리 주 오탐(W36 19/20건)을 막는다 — 현재는 서브에이전트 프롬프트에서만 보정,
   스킬 본문(`~/.claude/skills/weekly-newsletter/SKILL.md`)에는 미반영.
+
+## weekly-analytics W38: 원격 기계 사각지대·무인 판정·서브에이전트 이동 (2026-09-19)
+
+- **⚠️ 로컬 로그 ≠ 사용자 전체 사용량.** W38 soombi 커밋 113건 중 이 맥 세션의 `git commit` 호출은 5건,
+  chalna 33건 중 ~4건. 나머지는 Windows PC의 Claude 세션(커밋 "Windows cp949", 발화 "window pc 에서 inject").
+  맥 쪽 soombi 세션은 "최신화 해줘"(pull)만 반복한다. **저장소 커밋 수 vs 로컬 `git commit` 호출 수**를
+  매주 대조할 것 — 호출 수는 jsonl에서 assistant `tool_use.input.command`에 `git commit` 포함 여부로 센다.
+- **zsh는 따옴표 없는 `$VAR`를 단어 분할하지 않는다.** `R="--since=.. --until=.."; git log $R`는 인자 1개로
+  넘어가 **에러 없이 빈 출력**. 배열 `R=(--since=.. --until=..)`로 쓸 것.
+- **"무인 시간" 판정법**: 워커-only 병합 구간에서 실작업-only 병합 구간을 뺀 차집합. W38 = 0h 35m.
+  보조 증거로 실작업 세션의 **사람 입력 프롬프트 시각 분포**(`<task-notification`·`<system-reminder`·
+  `<command-`·`<teammate-message`·`Another Claude session sent a message` 제외)를 볼 것 — 00~04시 31%였고 05~07시 0.
+- **위임이 agent-team 워커 → 직접 Agent 서브에이전트로 이동**(워커 54→23, 서브에이전트 로그 16→95).
+  서브에이전트 구간은 `wk_union` 병합에 안 잡히므로 병렬 계수가 위임 물량을 더 이상 반영하지 못한다.
+  playwright도 워커 482→12 대신 서브에이전트 429 — **top-level 표만 보면 브라우저 자동화가 준 것처럼 오독**.
+- `wk_classify`의 META 경계 문제(자동 실행 analytics 세션 12m → real) 2주 연속 미이행. 빈 세션(msgs=0)도 real로 샌다.
+
+## weekly-newsletter W38 실행: haiku 분석기의 주차 혼입 (2026-09-19)
+
+- **haiku 업무 분석기가 전주 리포트 내용을 이번 주 성과로 섞었다.** W37 수치를 "헤드라인만 참고"하라고
+  허용했더니 "288곡 회수", "09-12 사전 승인 배치"(둘 다 W37 사건)가 W38 하이라이트로 들어왔다.
+  → 주간 리포트(`analytics/claude-weekly/YYYY-WXX.md`, ~24KB)는 **메인이 직접 Read**하는 편이 정확하다.
+  포커스 판정·수치 인용이 핵심이라 요약본으로는 부족하다. 서브에이전트는 문서 분석기만으로 충분.
+- 문서 분석기가 뽑은 인용문은 `grep`으로 원문 존재를 확인한 뒤 싣는다(이번엔 둘 다 실재).
+- 스킬 본문(`SKILL.md`)은 W38 시점에도 커피타임 SubAgent 2·`created_at` 미반영 그대로다(2주째).
+
+## obsidian-summarize-youtube: vis tag 대소문자 중복 · zsh `===` 함정 (2026-09-23)
+
+- `vis tag`는 고신뢰도 태그를 **소문자로 정규화해 append**한다. 내가 `AI/cost-optimization/token-efficiency`를
+  이미 달아둬도 `ai/cost-optimization/token-efficiency`가 **대소문자만 다른 중복**으로 추가됨.
+  → 실행 후 frontmatter 확인 시 `ai/` 소문자 중복 줄을 찾아 삭제할 것(vault 관례는 `AI/` 대문자).
+- zsh에서 `echo ===`는 `=cmd` 경로 확장으로 해석돼 `== not found`로 **체인 전체가 중단**된다.
+  명령 사이 구분선은 `echo '---'`처럼 따옴표로 감쌀 것.
+- 한국어 원본 영상의 자동 자막은 모델명이 심하게 깨진다(Sol→"쏘리", effort→"F42", Three.js→"3J").
+  복원은 문맥 추정이므로 문서에 (추정) 표기 + Uncertainty Map에 원문 자막을 남길 것.
+
+## weekly-analytics W39: Workflow 에이전트 누락·원격=팀원·해시 대조 실패 (2026-09-26)
+
+- **⚠️ `wk_analytics.py`는 Workflow 에이전트 로그를 못 본다.** glob이 `<proj>/<session>/subagents/*.jsonl`인데
+  Workflow가 띄운 에이전트는 `subagents/workflows/<wf_id>/agent-*.jsonl`(+`journal.jsonl`)에 쌓인다.
+  W39 창 내 240개·8h 43m·sonnet-4-6 2,499건이 통째로 누락(서브에이전트 6h 45m보다 큼). 전 기간 1,393개.
+  수정: glob에 `*/*/subagents/workflows/*/agent-*.jsonl` 추가(`journal.jsonl` 제외) 후 **W38 재계산으로 회귀 검증**.
+  W39 측정용 임시본은 `/tmp/wk39d/wf.py`.
+- **W38의 "원격 = 사용자 본인의 Windows PC" 추정은 틀렸다 — 팀원이다.** 09-23 발화 "팀원은 맥을 사용하지 않기 때문에…".
+  커밋 작성자가 전부 `zionge2k`여도 작업자는 다를 수 있다. 커밋 메시지의 "언니"·"사장님"도 단서였다.
+  이 리포트는 "이 맥 사용자 1인의 사용량"이지 팀 사용량이 아니다.
+- **커밋 해시 ↔ 세션 tool_result 대조는 안 된다.** `[branch abc1234]` 패턴으로 잡으면 playlist 호출 27건 중 6건만 일치
+  (출력 생략·다중 커밋·형식 차이). 맥/원격 귀속은 `git commit` 호출 수 + 시각 대조(세션 발화 시간대 vs 커밋 시각)로 할 것.
+- **`grep -o '"name":"mcp__…"'`로 도구 사용을 세면 안 된다** — 도구 스키마 목록(deferred tools 안내)에도 같은 문자열이
+  들어 있어 실호출보다 수십 배 부풀려진다. 반드시 `assistant` 레코드의 `tool_use` 블록만 셀 것.
+- **stock cron 누락처럼 보여도 휴장일일 수 있다.** 09-24·25 저녁 브리핑 부재는 `~/projects/stock/logs/*.log`의
+  `Holiday … no briefing`으로 확인됨(추석). 장애 판정 전에 로그부터 볼 것.
+- 병렬 계수는 위임이 부모 세션 안(서브에이전트·Workflow)으로 들어가면서 "동시에 연 세션 수"만 잰다.
+  위임 강도는 *(서브에이전트+Workflow 활성) / 병합 활성* 비율로 따로 볼 것(W39 = 0.52).
+
+## weekly-newsletter W39 실행 메모 (2026-09-26)
+
+- **haiku 문서 분석기는 "AI 코딩 도구" 필터를 좁게 읽어 AI 음악(Suno) 문서를 제외한다.** W38 호는
+  같은 계열 문서를 기술 트렌드 머리기사로 썼으므로, 프롬프트에 "생성형 AI 도구 전반 포함"을 명시할 것.
+- **리포트의 저장소 커밋 수는 `git log --all`(전체 브랜치) 기준이다.** 기본 브랜치만 세면
+  soombi 33 / chalna 18로 과소집계되어 리포트 값(34/35)과 어긋난다. 사각지대 비율 검증 시 `--all` 사용.
+
+## 서브에이전트 모델 선택: 우선순위·실측·미로딩 에이전트 (2026-09-29)
+
+- **모델 결정 순서(공식 문서)**: 호출 시 `model` > 에이전트 frontmatter `model:` > `CLAUDE_CODE_SUBAGENT_MODEL`
+  > 메인 세션 모델. 환경변수는 "미지정일 때의 기본값"일 뿐 덮어쓰지 않는다
+  (강제하려면 `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`). 에이전트 frontmatter는 `effort:`도 지원하나
+  **호출 시 effort 지정은 불가** — effort는 frontmatter로만 고정된다.
+- **환경변수에 버전을 고정하면 조용히 낡는다.** `claude-sonnet-4-6` 고정 탓에 최근 30일 서브에이전트·Workflow
+  실행 파일의 93%(1,412/1,515)가 두 세대 전 모델이었다. 별칭 `sonnet`으로 교체.
+- **claude-code-guide 에이전트 답변도 원문 대조 필수.** "에이전트 frontmatter에 effort 없음"이라 답했으나
+  문서 표에는 `effort` 행이 있었다. 핵심 주장은 WebFetch로 원문 인용을 받아 확인할 것.
+- **에이전트 frontmatter의 `description:`은 반드시 한 줄이어야 한다.** 빈 줄 + `Examples:` 블록이 여러 줄로
+  이어지던 8개(code-review-expert, ddd-expert, kent-beck-expert, prompt-expert, refactoring-expert,
+  spring-expert, vibe-coding-coach, zettelkasten-expert)가 **에러 없이 조용히 로딩 누락**되고 있었다.
+  줄바꿈을 리터럴 `\n`으로 이어 한 줄로 합치니 전부 로딩됨(2026-09-29 수정).
+  검증법: `claude -p --model haiku "사용 가능한 subagent_type 이름만 나열"`을 새 프로세스로 실행해 목록 대조.
+- 실측 스크립트 요령: 서브에이전트 실제 모델은 `~/.claude/projects/*/*/subagents/**/*.jsonl`의 assistant
+  `message.model`, 요청 모델은 메인 세션 jsonl의 `tool_use`(name=Agent) `input.model`에서 센다.

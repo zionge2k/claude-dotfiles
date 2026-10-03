@@ -682,3 +682,45 @@ corpus가 오염돼 있으면 오염 태그가 높은 점수를 받고, 그 결�
   검증법: `claude -p --model haiku "사용 가능한 subagent_type 이름만 나열"`을 새 프로세스로 실행해 목록 대조.
 - 실측 스크립트 요령: 서브에이전트 실제 모델은 `~/.claude/projects/*/*/subagents/**/*.jsonl`의 assistant
   `message.model`, 요청 모델은 메인 세션 jsonl의 `tool_use`(name=Agent) `input.model`에서 센다.
+
+## weekly-analytics W40: 클라우드 사각지대·top-level 강도 붕괴·분류 누수 2종 (2026-10-03)
+
+- **⚠️ 클라우드가 세 번째 관측 사각지대다.** `RemoteTrigger`(create/update/list_runs)로 띄운 원샷 루틴과
+  claude.ai/code 클라우드 세션은 로컬 jsonl을 남기지 않는다. 흔적은 ① 부모 세션의 `RemoteTrigger` tool_use
+  (`input.body.name`·`job_config.ccr.session_context.model`에 루틴명·모델이 있음) ② **커밋 작성자 `Claude`**
+  (`git log --format=%an`) 둘뿐. W40 yt-postflow는 커밋 57 / 로컬 `git commit` 호출 0이었다.
+- **커밋 시각은 `--date=format-local:`로 볼 것.** `--date=format:`은 커밋에 기록된 TZ를 그대로 써서, 클라우드
+  커밋(UTC)이 9시간 앞당겨져 보였다(03:05 ↔ 실제 12:05 KST).
+- **top-level 시간당 호출(5주간 84~99/h)은 위임이 부모 세션 안으로 들어가면 무너진다.** W40은 53/h였지만 서브에이전트
+  5,064 + Workflow 601을 더하면 154/h다. 강도 비교는 **top-level과 전체를 병기**하고, 브라우저(playwright +
+  `mcp__Claude_Browser__*`)는 서브에이전트 포함 열을 기본으로 둘 것.
+- **분류 누수 2종(미수정):** `-private-tmp` 디렉토리의 `claude -p` 프로브(메시지 1·활성 0)와 메시지 0인 빈 세션이
+  `real`로 샌다. `wk_classify.cls()`에 `user_msgs == 0 or active_s == 0 → meta`를 넣으면 막힌다. W40은
+  `/tmp/wk40/derive.py`의 `cls2()`로 수동 보정(real 17 → 13).
+- **서브에이전트 모델 전환을 일별로 보면 정책 효과가 바로 보인다.** sonnet-4-6이 09-29까지 100% → 09-30부터 0%
+  (sonnet-5-5로). 09-29 `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 커밋과 사용자의 명시 지시("sonnet 5.5로")가 같은 날이라
+  원인 분리는 불가. Workflow 에이전트는 09-26 실행분이라 여전히 sonnet-4-6.
+- `wk_analytics.py`의 Workflow glob 미편입 2주 연속(W39 권고). 이번 주는 Workflow 3회뿐이라 영향은 작았다.
+
+## weekly-newsletter: 스킬 인수가 본문의 `$0`/`$1`을 치환한다 (2026-10-03, W40 실행)
+
+- 인수를 붙여 실행하면(자동 실행 컨텍스트 문구 등) 스킬 본문의 `$1`·`$0`가 **인수 단어로 치환**된다.
+  W40에서 awk 필터 `'$1 >= start ... {print $0}'`가 `'실행 >= start ... {print 컨텍스트입니다.}'`로 깨져서 로드됐다.
+  `if [ -n "$1" ]`도 같은 이유로 깨진다. → 서브에이전트 프롬프트에 그대로 복사하지 말고 `$1`/`$0`을 복원할 것.
+  근본 해결은 SKILL.md의 필터를 `$N` 없는 형태(예: `find -newermt START ! -newermt NEXT_DAY`)로 바꾸는 것. 미착수.
+- 기존 티켓(SubAgent 2 제거·`created_at` 필터 명문화·날짜 스니펫 교체)은 W40 기준 4주째 미반영.
+
+## OBS 설정 조사 세션: 토큰 노출·ffmpeg 조용한 실패·서브에이전트 추가 지시 누락 (2026-10-03)
+
+- **⚠️ OBS 프로필 `basic.ini`를 통째로 출력하지 말 것.** `[YouTube]` 섹션에 OAuth `RefreshToken`/`Token`이
+  평문으로 들어 있다(스트림 키는 `service.json`). 설정 확인은 `grep -E '^(Encoder|FPSCommon|OutputC[XY]|SampleRate)='`
+  처럼 필요한 키만 뽑을 것. 이번에 `cat`으로 읽어 토큰이 세션 기록에 남았다.
+- **ffmpeg concat demuxer는 비트 심도가 섞이면 조용히 깨진다.** 24bit + 16bit WAV를 합치면 decode error를 내면서도
+  **exit 0**이고 결과 길이만 짧아진다. → 합치기 전 `ffprobe -show_entries stream=codec_name,sample_rate,channels`를
+  `sort | uniq -c`로 돌려 한 줄인지 확인, 합친 뒤 입력 길이 합계와 결과 길이를 대조할 것.
+- zsh에서 concat 목록의 작은따옴표 이스케이프는 `${f//\'/\'\\\'\'}`로 쓰면 깨진다.
+  `q="'\\''"; printf "file '%s'\n" "${f//\'/$q}"`처럼 변수로 뺄 것.
+- **실행 중인 서브에이전트에 `SendMessage`로 보낸 추가 지시는 반영되지 않은 채 끝날 수 있다.** 3건 중 1건만 반영됐다.
+  완료 보고에서 반영 여부를 확인하고, 빠졌으면 완료 후 재개 메시지로 다시 보낼 것.
+- 재개된 서브에이전트의 완료 알림에는 **마지막 메시지만** 실려 본문이 잘린다(체크리스트만 도착, 출처 누락).
+  프롬프트에 "전체를 한 응답에, N줄 이내로"를 명시하면 막힌다.

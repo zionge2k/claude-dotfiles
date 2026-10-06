@@ -595,7 +595,7 @@ CLAUDE.md에 정의된 주요 규칙과 가이드라인입니다. Claude Code �
 |------|--------|------|
 | `ENABLE_LSP_TOOL` | `1` | Serena LSP 통합 활성화 |
 | `MAX_THINKING_TOKENS` | `16000` | 확장 사고 최대 토큰 |
-| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | `16384` | 최대 출력 토큰 |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | `32000` | 최대 출력 토큰 (서브에이전트에도 적용) |
 | `BASH_MAX_OUTPUT_LENGTH` | `1000000` | Bash 출력 한도 (1MB) |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` | 팀 에이전트 기능 |
 | `CLAUDE_CODE_SUBAGENT_MODEL` | `claude-opus-4-8` | 서브에이전트 기본 모델 (비용 작업은 `templates/delegation.md`로 Sonnet 4.6/Haiku 4.5 다운시프트) |

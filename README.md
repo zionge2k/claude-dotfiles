@@ -243,7 +243,7 @@ grep -rl "zion-vault" .claude/agents/
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
 | `MAX_THINKING_TOKENS` | `16000` | 확장 사고 최대 토큰 |
-| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | `16384` | 최대 출력 토큰 |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | `32000` | 최대 출력 토큰 (서브에이전트에도 적용) |
 | `CLAUDE_CODE_SUBAGENT_MODEL` | `claude-opus-4-8` | 서브에이전트 기본 모델 (비용 작업은 `templates/delegation.md`로 Sonnet 4.6/Haiku 4.5 다운시프트) |
 | `BASH_DEFAULT_TIMEOUT_MS` | `120000` | Bash 기본 타임아웃 (2분) |
 

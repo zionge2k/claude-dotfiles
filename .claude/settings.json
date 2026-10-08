@@ -47,7 +47,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "fable",
   "skillOverrides": {
     "brunch-writer": "user-invocable-only",
     "sourcing-keyword-research": "user-invocable-only",
@@ -223,6 +223,9 @@
     },
     "claude-opus-4-8": {
       "effortLevel": "high"
+    },
+    "claude-sonnet-5-5": {
+      "maxEffortLevel": "xhigh"
     }
   },
   "tui": "fullscreen",

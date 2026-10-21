@@ -28,8 +28,6 @@ brew "node"
 brew "pipx"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
-# Python version management
-brew "pyenv"
 # Static type checker for Python
 brew "pyright"
 # Interpreted, interactive, object-oriented programming language

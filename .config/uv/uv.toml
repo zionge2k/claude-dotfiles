@@ -1,0 +1,2 @@
+# Use only uv-managed interpreters so Homebrew/system Pythons never leak into projects.
+python-preference = "only-managed"

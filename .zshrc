@@ -436,10 +436,12 @@ export SDKMAN_DIR="$HOME/.sdkman"
 # turning the wrappers into infinite recursion that kills npx-based MCP servers.
 # See ai-learnings.md. If nvm is ever needed, use the standard init block.
 
-# --- pyenv ---
-if command -v pyenv &>/dev/null; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init -)"
+# --- Python: uv only (pyenv removed) ---
+# Interpreters: `uv python install` (default `python` -> ~/.local/bin, see uv.toml).
+# Projects: per-project .venv via `uv sync`; packages are shared through uv's cache.
+# Scratch scripts: shared env at ~/.venvs/common (alias `pyc` activates it).
+if command -v uv &>/dev/null; then
+  # brew shellenv (above) puts /opt/homebrew/bin first; put uv's python shims back in front.
+  export PATH="$HOME/.local/bin:$PATH"
+  alias pyc='source "$HOME/.venvs/common/bin/activate"'
 fi

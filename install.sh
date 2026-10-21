@@ -206,7 +206,6 @@ install_plugins() {
     "greptile@claude-plugins-official"
     "hookify@claude-plugins-official"
     "learning-output-style@claude-plugins-official"
-    "Notion@claude-plugins-official"
   )
 
   # LSP plugins (now part of claude-plugins-official marketplace)

@@ -5,7 +5,7 @@
 >
 > 이 dotfiles는 [msbaek/dotfiles](https://github.com/msbaek/dotfiles)를 기반으로 만들어졌습니다.
 
-**포함:** 에이전트 24개 | 커맨드 35개 | 스킬 11개 | 플러그인 24개 | 훅 6개
+**포함:** 에이전트 24개 | 커맨드 35개 | 스킬 11개 | 플러그인 23개 | 훅 6개
 
 ---
 
@@ -53,7 +53,7 @@ cd ~/claude-dotfiles
 1. 의존성 설치    OS 감지 → brew/pacman으로 stow, jq, node, 알림 도구 설치
 2. 기존 설정 백업  ~/.claude/ → ~/.claude.backup.{timestamp}/
 3. Stow 배포      stow --no-folding → ~/.claude/에 심볼릭 링크 생성
-4. 플러그인 설치   3개 마켓플레이스 + 24개 플러그인
+4. 플러그인 설치   3개 마켓플레이스 + 23개 플러그인
 ```
 
 <details>
@@ -69,9 +69,9 @@ cd ~/claude-dotfiles
 </details>
 
 <details>
-<summary><b>설치되는 플러그인 (24개)</b></summary>
+<summary><b>설치되는 플러그인 (23개)</b></summary>
 
-**공식 (19개):** superpowers, feature-dev, code-review, code-simplifier, pr-review-toolkit, frontend-design, github, playwright, serena, security-guidance, atlassian, plugin-dev, hookify, claude-md-management, greptile, explanatory-output-style, learning-output-style, playground, Notion
+**공식 (18개):** superpowers, feature-dev, code-review, code-simplifier, pr-review-toolkit, frontend-design, github, playwright, serena, security-guidance, atlassian, plugin-dev, hookify, claude-md-management, greptile, explanatory-output-style, learning-output-style, playground
 
 **LSP (4개):** jdtls (Java), kotlin-lsp, vtsls (TS/JS), pyright (Python)
 

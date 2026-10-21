@@ -348,21 +348,6 @@
 |------|--------|------|
 | `playground` | `/playground:playground` | 인터랙티브 HTML 플레이그라운드 생성 |
 
-### Notion
-
-| 스킬 | 사용법 | 설명 |
-|------|--------|------|
-| `find` | `/Notion:find` | 제목 키워드로 페이지/데이터베이스 검색 |
-| `search` | `/Notion:search` | Notion 워크스페이스 전체 검색 |
-| `create-page` | `/Notion:create-page` | 새 Notion 페이지 생성 |
-| `create-task` | `/Notion:create-task` | 태스크 데이터베이스에 새 태스크 생성 |
-| `create-database-row` | `/Notion:create-database-row` | 데이터베이스에 새 행 삽입 |
-| `database-query` | `/Notion:database-query` | 데이터베이스 쿼리 및 구조화된 결과 반환 |
-| `tasks:plan` | `/Notion:tasks:plan` | Notion 페이지 URL에서 태스크 계획 |
-| `tasks:build` | `/Notion:tasks:build` | Notion 페이지 URL에서 태스크 구현 |
-| `tasks:explain-diff` | `/Notion:tasks:explain-diff` | 코드 변경사항을 Notion 문서로 설명 |
-| `tasks:setup` | `/Notion:tasks:setup` | Notion 태스크 보드 설정 |
-
 ### msbaek-tdd
 
 | 스킬 | 사용법 | 설명 |
@@ -692,12 +677,6 @@ glab mr merge --squash          스쿼시 머지
 /atlassian:triage-issue               이슈 트리아지
 /atlassian:spec-to-backlog            스펙→백로그
 /atlassian:generate-status-report     상태 리포트
-
-[Notion]
-/Notion:search                        워크스페이스 검색
-/Notion:create-task                   태스크 생성
-/Notion:tasks:plan                    태스크 계획
-/Notion:tasks:build                   태스크 구현
 
 [키보드]
 meta+p  모델 선택    meta+o  패스트모드

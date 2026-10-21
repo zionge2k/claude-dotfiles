@@ -978,3 +978,16 @@ corpus가 오염돼 있으면 오염 태그가 높은 점수를 받고, 그 결�
 - `/model` 전환은 사람 프롬프트에 안 남고 `<local-command-stdout>Set model to … saved as your default` 로그로만 남는다.
   미커밋 `settings.json` model diff의 출처가 이것이었다. 모델 전환 계기는 이 문자열의 timestamp로 찾을 것.
 - 원격 커밋 메시지의 "언니 폰 업로드" → 휴대폰이 네 번째 실행면(맥·원격 PC·클라우드에 이어). 세션 지표엔 안 잡힌다.
+
+## 컴퓨터 초기화 전 전 저장소 푸시 점검 절차 (2026-10-21)
+
+- 점검 4축: 미커밋 파일 · **모든 로컬 브랜치**의 upstream 유무와 ahead 수 · stash · 원격 없는 저장소.
+  현재 브랜치만 보면 `feat/*` 로컬 전용 브랜치(portfolio 6커밋, playlist 1커밋)를 놓친다.
+  `git for-each-ref refs/heads/` 로 전 브랜치를 돌고, upstream 없는 브랜치는 `git branch --merged main`으로 병합 여부 확인.
+- **stash는 push 대상이 아니다.** 오래된 stash를 `stash apply`하면 main과 충돌해 커밋이 안 될 수 있다(chalna, 9-30 stash).
+  충돌 해결 없이 원본 그대로 보존하려면 stash 커밋 자체를 원격 브랜치로 민다:
+  `git push origin stash@{0}:refs/heads/wip/<name>`. 원격 해시 == `git rev-parse stash@{0}` 로 검증.
+- 원격 없는 저장소는 `gh repo create <owner>/<name> --private --source=. --remote=origin --push` 한 줄로 생성+추적+푸시.
+  푸시 전 `.gitignore`와 `git ls-files -co --exclude-standard | grep -iE 'env|token|secret'` 로 자격증명 유출 확인.
+- **gitignore된 자격증명(.env, .youtube/token.json, .tokens.json)은 푸시로 보존되지 않는다.** 초기화 전 별도 백업 목록을 뽑아 보고할 것.
+- zsh 함정: `for spec in "a b"; set -- $spec` 은 zsh에서 단어 분리가 안 된다. 함수 인자로 넘기거나 `${=spec}` 사용.

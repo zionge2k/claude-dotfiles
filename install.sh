@@ -194,16 +194,13 @@ install_plugins() {
   local PLUGINS=(
     "frontend-design@claude-plugins-official"
     "code-review@claude-plugins-official"
-    "github@claude-plugins-official"
     "feature-dev@claude-plugins-official"
     "playwright@claude-plugins-official"
     "serena@claude-plugins-official"
     "security-guidance@claude-plugins-official"
     "pr-review-toolkit@claude-plugins-official"
-    "atlassian@claude-plugins-official"
     "plugin-dev@claude-plugins-official"
     "explanatory-output-style@claude-plugins-official"
-    "greptile@claude-plugins-official"
     "hookify@claude-plugins-official"
     "learning-output-style@claude-plugins-official"
   )

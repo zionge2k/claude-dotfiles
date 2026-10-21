@@ -303,16 +303,6 @@
 |------|--------|------|
 | `frontend-design` | `/frontend-design:frontend-design` | 프로덕션급 프론트엔드 인터페이스 생성 |
 
-### Atlassian (Jira/Confluence)
-
-| 스킬 | 사용법 | 설명 |
-|------|--------|------|
-| `triage-issue` | `/atlassian:triage-issue` | 버그 리포트 트리아지 (중복 검색 → 이슈 생성) |
-| `capture-tasks-from-meeting-notes` | `/atlassian:capture-tasks-from-meeting-notes` | 미팅 노트 → Jira 태스크 자동 생성 |
-| `generate-status-report` | `/atlassian:generate-status-report` | Jira → Confluence 상태 리포트 |
-| `search-company-knowledge` | `/atlassian:search-company-knowledge` | 사내 지식베이스 검색 (Confluence/Jira) |
-| `spec-to-backlog` | `/atlassian:spec-to-backlog` | Confluence 스펙 → Jira 백로그 자동 변환 |
-
 ### Plugin Dev
 
 | 스킬 | 사용법 | 설명 |
@@ -374,7 +364,6 @@
 | 플러그인 | 설명 |
 |---------|------|
 | `security-guidance` | 보안 관련 작업 시 OWASP 기반 가이드라인 적용 |
-| `greptile` | 코드 검색 강화 (코드베이스 인덱싱 기반) |
 | `serena` | LSP 기반 시맨틱 코드 탐색 (MCP 서버) |
 | `playwright` | 브라우저 자동화 (MCP 서버) |
 
@@ -672,11 +661,6 @@ glab mr merge --squash          스쿼시 머지
 /superpowers:systematic-debugging     디버깅
 /superpowers:writing-plans            계획 작성
 /superpowers:executing-plans          계획 실행
-
-[Atlassian]
-/atlassian:triage-issue               이슈 트리아지
-/atlassian:spec-to-backlog            스펙→백로그
-/atlassian:generate-status-report     상태 리포트
 
 [키보드]
 meta+p  모델 선택    meta+o  패스트모드

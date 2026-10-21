@@ -1,3 +1,5 @@
+# Simple, modern, secure file encryption
+brew "age"
 # Shell extension to jump to frequently used directories
 brew "autojump"
 # Clone of cat(1) with syntax highlighting and Git integration

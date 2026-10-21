@@ -779,3 +779,202 @@ corpus가 오염돼 있으면 오염 태그가 높은 점수를 받고, 그 결�
   `auto` 배수(예: 0.93배 ≈ 17.8pt)로 준다. 확인법: 공유 문서를 `…/export?format=docx`로 받아 spacing 비교.
 - 렌더 확인 수단이 없을 때는 사용자가 실제로 보는 뷰어(Google Docs 등)를 먼저 물어볼 것. Playwright로
   공유 문서를 열면 줄 간격을 px로 잴 수 있다(100%에서 A4 폭 ≈ 794px, 1px = 0.75pt).
+
+## 유튜브 한국 음악 차트 조사 (2026-10-08)
+
+- 유튜브 공식 `charts.youtube.com`은 검색/페치로 직접 접근이 안 됨. 대체 소스:
+  - `kworb.net/youtube/insights/kr_daily.html` — 일간 top 20(스트림 기준), WebFetch로 바로 읽힘
+  - `soundcharts.com/en/charts/youtube/south-korea` — 주간 top(조회수)
+  - 쇼츠 차트는 더팩트 등 기사 인용으로만 확인 가능
+- 유튜브는 **장르별 집계를 공개하지 않음**. "핫한 장르"는 차트 상위곡을 수동 분류해 추정해야 함.
+- 서브에이전트는 다른 모델 토큰을 소모함 → 사용자 주간 한도가 낮을 땐 메인 모델이 직접 WebSearch/WebFetch.
+
+## Pinterest 핀 단위 인기 지표: 공식 API 불가, 비공식 PinResource로 가능 (2026-10-09)
+
+- 공식 API v5는 **내 소유 Pin**의 지표와 **키워드 단위** Trends만 제공. 타인 공개 Pin의 저장·반응 수 필드 없음.
+  Trends `region` enum에 KR 없음. (OpenAPI 스펙 v5.28.0 직접 파싱으로 확인)
+- 핀 상세 페이지 UI의 하트(반응) 수는 **비공식 내부 엔드포인트**로 로그인 없이 조회됨 (HTTP 200 확인):
+  ```
+  GET https://www.pinterest.com/resource/PinResource/get/
+      ?source_url=/pin/{id}/
+      &data={"options":{"id":"{id}","field_set_key":"detailed"},"context":{}}
+  헤더: X-Requested-With: XMLHttpRequest, X-Pinterest-PWS-Handler: www/pin/[id].js, 데스크톱 UA
+  ```
+  `resource_response.data` 주요 필드:
+  - `reaction_counts` → `{"1": 53}` 형태. 키 `1`이 하트(반응). UI의 하트 수치와 일치.
+  - `aggregated_pin_data.aggregated_stats.saves` → 같은 이미지의 **플랫폼 전체 누적 저장 수** (예: 13554). 인기 판별엔 이 값이 핵심.
+  - `repin_count` → 이 Pin 사본 하나의 저장 수. 대부분 0이라 단독으로는 무의미.
+  - `comment_count`, `share_count`, `created_at`.
+- **함정**: 핀 페이지 HTML을 curl로 받으면 셸만 오고 Pin JSON은 없음. 데이터는 위 resource 엔드포인트로 따로 호출해야 함.
+- **함정**: Playwright MCP 브라우저는 사용자 로그인 세션을 그대로 씀. 로그인 상태에서는 핀 URL이 난독화 ID(`/pin/ARqL...`)로 리다이렉트됨. 숫자 ID는 비로그인 curl에서 그대로 동작.
+- ToS상 무허가 자동 수집은 금지. 소량 수동 조회·연구 용도로만.
+
+## Pinterest 수집기 실측 수치와 서브에이전트 운영 메모 (2026-10-09)
+
+- 프로젝트: `~/projects/pinterest-loop-refs` (`uv run plr run --only <slug>`). 비공식 `BaseSearchResource` + `PinResource` 조합, 로그인 불필요.
+- **실측**: 한·영 검색어 각 2페이지(≤100건) → 광고·동영상·1200px 미만 제외 + 서명 중복 제거 후 **장면당 38~76건** 남음.
+  상세 호출 2초 간격이라 **장면당 2~4분**. 14장면 100장 수집에 차단·오류 0건. 캐시: 검색 55개, 핀 793개.
+- **가로 비율 수율은 7%** (100장 중 7장이 가로비 ≥1.3). 롱폼 가로용이면 비율 필터 없이 받은 뒤 검수에서 고르거나,
+  세로 이미지를 아웃페인팅할 전제가 필요.
+- `aggregated_stats.saves`가 없는 핀이 장면에 따라 0~47% 섞임 (최근 핀으로 추정). 상위 N개에는 영향 없었지만 "전부 0"이면 응답 형식 변경 의심.
+- 검색 결과에는 저장 수가 없고 상세 호출에만 있음. 서명(`image_signature`) 기반 중복 제거는 검색 결과만으로 가능.
+- **Agent 도구 함정**: `name`을 붙인 에이전트를 10개쯤 띄운 뒤 `respawn pane failed: fork failed: Device not configured`로 생성 실패.
+  `name` 없이 띄우면 백그라운드 모드로 정상 동작하며 `SendMessage`는 agentId로 가능. 결과 도착 알림은 중복으로 오는 경우가 있음.
+- 리뷰 루프 수확: 플랜에 완전한 코드를 넣어도 품질 리뷰(opus)가 Task마다 운영상 결함 1~2건을 잡음
+  (실패 본문 캐시 오염, 404로 배치 사망, 부분 다운로드 파일 잔존, 미완료 장면 영구 skip). 일회성 배치 도구라도 "재실행했을 때"를 기준으로 리뷰시키는 게 효과적.
+
+## weekly-analytics W41: Workflow 로그가 전체 호출의 61%, 프로브 누수는 `< 60`으로, 커밋 주체는 Workflow 안 (2026-10-10)
+
+- **Workflow 에이전트 로그(`subagents/workflows/*/agent-*.jsonl`)가 이번 주 도구 호출 29,463건 중 17,972건이다.**
+  `wk_analytics.py`가 안 읽는 상태로 3주째. 파생 스크립트로 매주 다시 세는 비용이 본 집계 편입보다 커졌다.
+  편입 시 W39~W41 위임 비율이 소급 변경되므로 재계산 표를 함께 붙일 것.
+- **W40 권고 `active_s == 0 → meta`는 `-private-tmp` 프로브를 못 잡는다.** 프로브 활성이 0이 아니라 수 초(≈5s)다.
+  `user_msgs == 0 or active_s < 60`이어야 한다. 이번 주도 수동 보정(real 24 → 21).
+- **저장소 커밋 수와 맥 `git commit` 호출 수의 차이는 클라우드가 아니라 Workflow 에이전트 안의 커밋일 수 있다.**
+  W41 playlist 커밋 104 / 맥 호출 61인데, Workflow 에이전트 안에서 `git commit` 216회·`gh pr` 44회가 돌았다.
+  사각지대 판정 전에 workflow 로그의 Bash `git commit`을 먼저 셀 것(W40의 `Claude` 작성자 기준만으로는 부족).
+- **Workflow 이름은 부모 세션 `Workflow` tool_use의 `script` 안 `meta.name` 정규식 또는 `scriptPath` basename으로 복원된다.**
+  `resumeFromRunId`는 이번 주 0회. 같은 스크립트를 `scriptPath`로 재호출하는 패턴이 표준이었다(11회·7회).
+- **Agent 호출의 `subagent_type`·`model` 인자를 세면 "어떤 역할이 표준이 됐는지"가 바로 보인다.**
+  W41: suno-translator 133 · lyrics-reviewer 79 · song-lyric-writer 74, model=opus 214 / 기본값 217.
+- **top-level 일별 모델 분포는 전환 계기와 같이 봐야 한다.** 10-08 18:45 dotfiles 커밋(fable 기본값) → 23:39 "토큰 2%" 발화 →
+  10-09 100% fable. 커밋 시각은 `git log --date=format-local:`로 볼 것(W40 교훈 재확인).
+- 서사 추출은 opus 서브에이전트에 `/tmp/wk41/prompts.txt`(사람 프롬프트 526건, 87KB) + `commits.txt`를 주고 4개 섹션을
+  파일로 쓰게 했다. 6분·18 tool uses. **commits.txt를 `head -70`으로 자르면 오후 커밋이 빠진다** — 서브에이전트가 git log를
+  다시 봐서 메웠다. 다음엔 자르지 말고 저장소별 전체를 줄 것.
+- 이번 주 `<pasted_content>` 28회는 top-level 사람 메시지 중 태그 포함 수로 셌다. W40 12회와 같은 기준.
+
+## weekly-newsletter W41 실행 메모 (2026-10-10)
+
+- **날짜 스니펫은 이번에도 실패했다.** `date -j -f "%G-W%V-%u"`는 macOS에서 빈 문자열을 돌려주고 이후 `-v-2d` 변환까지
+  연쇄 실패한다(에러는 나지만 `WEEK_NUM`만 살아 있어 이어 가기 쉬움). 토요일 실행이면 **토요일 = 오늘 - 7일, 금요일 = 오늘 - 1일**로
+  직접 계산하는 편이 빠르다. 날짜 확인은 `date -j -f "%Y-%m-%d" "$d" "+%a W%V"`로.
+- **입력 소스 상태(W41 기준, 변동 없음)**: dailies 최신 2026-06-29, coffee-time 2026-03-07 → 주간 분석 리포트
+  (`analytics/claude-weekly/2026-W41.md`, 44KB)를 메인이 직접 Read. 문서 분석기만 sonnet 서브에이전트 1개(20초, 55K 토큰).
+  `find -newermt START ! -newermt NEXT_DAY` + `created_at` 2차 필터로 후보 1건 → 통과 1건, 오탐 0.
+- **문서 `id`와 파일명이 다르면 파일명으로 링크한다.** 이번 Suno 문서는 id에 `｜`·`[이거]`가 있고 파일명은 ` — `다.
+  `[[id]]`로 걸면 깨진다. Related Notes 작성 후 `grep -o '\[\[[^]|#]*'` → `find -name "$t.md"`로 전수 확인할 것.
+- 인용문 원문 확인(`grep -n "힌트"`)은 1회로 끝났다. 서브에이전트가 돌려준 인용은 원문 43행과 일치.
+- 스킬 본문 티켓(SubAgent 2 제거·`created_at` 명문화·날짜 스니펫·awk `$1` 치환)은 **5주째 미반영**. 집계 스크립트 Workflow glob은 3주째.
+
+## weekly-newsletter W42 실행 메모 (2026-10-17)
+
+- **서브에이전트를 띄우기 전에 소스 존재부터 확인할 것.** 스킬 본문대로 3개를 병렬로 띄웠더니 dailies·coffee-time
+  분석기 2개가 "없음"만 돌려주고 약 9만 토큰을 썼다(상태는 W41과 같다: dailies 06-29, coffee-time 03-07).
+  `command ls notes/dailies | tail -1; command ls coffee-time | tail -1` 한 줄이면 판정된다(`ls`는 eza 별칭이라 `grep`과 섞이면 빈 결과).
+- **"기술 무관" 문서도 `created_at`을 주간 분석 타임라인과 대조할 것.** 분석기는 색채 강의 5건을 "외부 공유 부적합"으로 분류했다.
+  그런데 생성 시각(10-13 01:57~02:02)이 같은 세션의 02:52 색 배합 결정 직전이었다. **결정에 앞선 사전 조사**라는 맥락이
+  생기자 기술 교훈(RAW/LOG ↔ 축별 조사 깊이, 컬러 트렌드 ↔ 출처 규칙)으로 옮길 수 있었다. Highlights 절만
+  `awk '/^## 1\. Highlights/{on=1;next} on&&/^## 2\./{exit} on'`로 뽑으면 5건을 합쳐 약 6KB다.
+- 주간 분석 창은 **토 08:00 ~ 다음 토 08:00**이라 토요일 새벽 작업이 들어 있다. 뉴스레터 기간(토~금)에는
+  금요일 항목에 "금요일 밤 연장"으로 접어 넣고, 머리말에 경계를 밝혔다.
+
+## 방송대 객관식 과제: 공식 양식 PDF에 직접 표시하기 (2026-10-11)
+
+- LibreOffice가 없어 docx → PDF 변환이 막혀도 우회할 수 있다. 양식이 Google Docs 공유 링크면
+  `…/document/d/<id>/export?format=pdf`로 **교수 원본 양식 그대로의 PDF**를 받고, 그 위에 글자를 얹는다.
+- `uv run --no-project --with pymupdf`면 시스템 설치 없이 PyMuPDF를 쓴다. `page.find_tables()`가 병합 셀까지
+  셀 좌표를 돌려주므로(병합으로 사라진 칸은 `None`) 행 번호 텍스트로 문항을 확인하고 셀 중앙에 `■`를 넣는다.
+- 한글·`■` 글꼴은 `/System/Library/Fonts/Supplemental/AppleGothic.ttf`(단일 TTF)가 임베드된다. `subset_fonts()` 필수.
+- 양식의 `이름:` 줄은 뒤에 공백이 길게 붙어 있다. 줄 끝이 아니라 `search_for("이름:")`의 오른쪽 끝에 맞춘다.
+- 검증은 `pdftotext -layout` 한 번이면 된다. 행마다 `■` 위치가 열로 보인다. 그 뒤 PNG로 육안 확인.
+- `~/Downloads`는 세션 첫 시도에서 `Operation not permitted`가 났다가 다음 턴에 열렸다. 권한 오류는 한 번 더 시도.
+- AI 사용 설문은 본인 사실·의견이라 추정하지 말고 AskUserQuestion으로 묻는다(선택지 4개 제한에 맞춰 묶기).
+
+## 방송대 과제 지침: AI 사용 가능 여부 표는 렌더링해서 확인 (2026-10-11)
+
+- 과목마다 생성형 AI 정책이 다름. 경제학의 이해는 허용, 성·사랑·사회(공통형 서평)는 `사용불가`에 ○.
+- `pdftotext -layout`만 보면 ○가 어느 칸인지 모호함. `pdftotext -bbox`로 ○의 x좌표를 열 제목 x범위와
+  비교하거나 `pdftoppm -png`로 렌더링해 눈으로 확인할 것.
+- 지침 2쪽에 `[참고문헌]`이 따로 있을 수 있음. 검색 요약(구글 AI 답변)은 도서 누락·서지 오류가 있었으므로
+  지침 원문을 끝 페이지까지 먼저 읽을 것.
+- 작성을 시작하기 전에 AI 정책부터 확인하고 사용자에게 알릴 것.
+- 지정 도서를 구하는 가장 빠른 길은 방송대 중앙도서관. 로그인 없이 소장 조회가 된다:
+  `https://library.knou.ac.kr/search/tot/result?st=KWRD&si=TOTAL&q=<검색어>` (Playwright로 연 뒤 같은 출처 `fetch`로
+  여러 권을 한 번에 조회 가능). `[전자책]` 항목의 `URL` 링크는 도서관 로그인 뒤 열린다.
+  성·사랑·사회 2026-2 지정 도서 5권은 모두 전자책 소장이었다.
+- 밀리의 서재 검색은 로그인 필수라 자동 확인 불가. Google Books API는 WebFetch에서 429. 알라딘 검색 결과 페이지는
+  WebFetch로 종이책 `미리보기`·전자책 `미리읽기` 여부까지 읽힌다.
+- 지침 표 위의 `<예시> 생성형 인공지능 사용 가능 여부`는 학교 공통 양식 문구다(다른 과목 변경 공지에도 같은 문구).
+  "예시라서 무효"가 아니라 ○ 위치가 실제 기준. 과목별 변경은 `2026학년도 2학기 중간과제물 과제명 등 변경 공지(1~5차)`에서 확인.
+
+## 방송대 서평 과제를 Word 파일로 만들기 (2026-10-11)
+
+- 책 본문이 없어도 **예스24 상품 페이지의 `출판사 리뷰`·`책 속으로`에 쪽수가 달린 본문 인용문**이 있다.
+  Playwright로 `#infoset_pubReivew`, `#infoset_inBook`, `#infoset_toc`를 읽는다. 인용은 이 원문에 있는 것만 쓰고,
+  본문의 큰따옴표 문자열이 원문에 그대로 있는지 스크립트로 대조한다(이번에 14개 전부 일치).
+- 방송대 교재 저자·목차는 `press.knou.ac.kr/goods/textBookView.do?condCmdtCode=<ISBN>`. 목차는 숨은 탭 DOM에 있다.
+- "한글 160%"는 글자 크기의 160%다. Word에서는 `lineRule=exact`, 11pt면 17.6pt로 고정해야 같은 밀도가 된다.
+  맑은 고딕에 배수 1.6을 주면 훨씬 벌어진다. 단 Google Docs는 exact를 지원하지 않는다.
+- python-docx: `w:pgNumType`은 `w:pgMar` 바로 뒤에 넣어야 스키마 순서가 맞다. 기본 템플릿의 `w:zoom`에는
+  `w:percent`가 없어 검증이 실패하므로 100을 넣는다. docx 스킬 `validate.py`는 `uv run --with defusedxml --with lxml`로 실행.
+- 쪽수는 렌더러가 없어 추정만 가능. 30/25/30mm 여백, 11pt, 17.6pt 줄 간격에서 본문 약 1,600자가 1쪽.
+- Playwright `filename` 저장은 프로젝트 폴더와 `.playwright-mcp`만 허용된다. 저장 뒤 스크래치패드로 옮긴다.
+- 성·사랑·사회 강의안 PDF(1~10강)는 `pdftotext -layout`로 바로 읽힌다(이미지형 아님). 강의 번호와 교재 장 번호·제목이
+  일치하므로 교재 쪽수가 없을 때는 장 단위로 인용하고, 쓴 표현이 강의안에 있는지 공백 제거 후 문자열 대조로 확인한다.
+  강의안은 교재(2016)보다 최신 내용이 섞여 있으니 참고문헌에 강의 자료를 따로 적는다.
+- 방송대 `(온라인 제출용)중간과제물표지.docx`는 별도 표지 쪽이 아니라 **첫 쪽 상단의 머리 블록**이다(제목 줄, 4행 표,
+  `- 이하 작성`). 본문은 그 아래에 바로 이어 쓴다. 여백이 위 35, 아래 30, 좌우 20mm라 본문 폭이 170mm로 넓다.
+  처음부터 이 양식을 받아 그 안에 쓰면 표지를 따로 만들 필요가 없다. 다음부터는 양식 유무를 먼저 물어볼 것.
+- 병합은 양식을 python-docx로 열어 표 4열에 run을 추가하고, 보고서 본문 `w:p`를 deepcopy해 `sectPr` 앞에 넣는다.
+  `pStyle`은 두 파일의 styleId가 달라 제거한다(문단에 직접 서식이 있어 모양은 유지됨).
+- python-docx의 `Length` 뺄셈 결과는 int라 `.pt`가 없다. EMU를 12700으로 나눈다.
+
+## 방송대 시뮬레이션 중간과제(3.4절 대기행렬): 예제 실행과 결과분석표 (2026-10-11)
+
+- 과제 지침 PDF는 1쪽이고 AI 사용 가능 여부 표가 **없다**. 예제·작성법은 교수 홈페이지에 있고 로그인 없이 `curl`로 읽힌다:
+  학습정보 `professor.knou.ac.kr/khkim/8685/subview.do`, 학습상담 `…/8679/subview.do`, 글 본문 `…/bbs/khkim/<게시판>/<글>/artclView.do`,
+  첨부 `…/download.do`. 사용자가 주는 `subview.do?enc=…` 링크는 base64로 풀면 `artclView.do` 경로가 나온다.
+  학습상담 검색은 `artclList.do`에 `srchColumn=sj&srchWrd=<검색어>` POST.
+- 꼭 읽을 글: 학습정보 `과제물관련 예제 프로그램 (C,JAVA, XCODE)`(243582), 학습상담 `(과제물 작성법1·2·3)`(239360, 239359, 525715).
+  봉사시간은 **그 고객의 봉사가 시작되는 시각에 새로 뜨는 TPUMP**다(도착 시각의 TPUMP는 앞 고객의 남은 시간 — 가장 흔한 감점).
+  출발 = max(도착, 앞 고객 출발) + 봉사, 대기 = max(0, 앞 고객 출발 − 도착). 봉사시간 0이면 1로 표기.
+- macOS에서는 예제(`EX3-3 -gcc.C`)를 그대로 쓰면 안 된다. `long`이 8바이트라 난수가 달라지므로 `int`로, `random`은 `random2`로 바꾼다(교수 공지).
+  이 난수기는 **32비트 정수 넘침**에 의존한다. clang `-O0`(기본)과 `-fwrapv`는 같은 결과지만 **`-O2`만 주면 결과가 달라진다.** 최적화 없이 컴파일할 것.
+- 포팅 검증: 교재 원래 조건(seed 35213, prarr 1/4, mean 4, tlimit 100)으로 돌리면 도착 22, 평균 대기행렬 1.59, 평균 대기시간 7.227이 나와야 한다
+  (7강 강의록 32쪽). 단 그 슬라이드의 `TIME 100, ARRIVE 1` 행은 실제 실행(0)과 다르다 — 통계값으로 대조할 것.
+- 강의록 PDF(Acrobat PDFMaker for PowerPoint)는 제목만 텍스트이고 코드·표는 이미지다. 강의별 서브에이전트 8개 병렬 전사는 약 3분.
+  그러나 이 과제는 3.4절 예제 하나만 쓰므로 **지침을 먼저 받았다면 7강만 봐도 충분했다.** 강의록 일괄 학습 전에 과제 지침부터 확인할 것.
+- `/opt/homebrew/bin/soffice`는 있지만 LibreOffice 본체가 없는 껍데기라 실행이 안 된다. docx 확인은 `qlmanage -t -s 1600`(첫 화면 PNG)과
+  `textutil -convert txt`(본문 대조)로 대신한다. 쪽 나눔은 확인할 수 없다. 셸에서 `ls`·`rm`은 별칭이라 `/bin/ls`·`/bin/rm`을 쓴다.
+- python-docx로 표 테두리를 직접 넣을 때 `w:tblBorders`는 `w:tblLayout`·`w:tblLook` **앞**에 넣어야 스키마 검증을 통과한다.
+
+## 방송대 심리학에게묻다 중간과제(귀인·인지적 오류 자기 분석) (2026-10-11)
+
+- 지침 표는 `사용불가`에 ○(`pdftotext -bbox`로 ○의 x좌표가 `사용불가` 열 안인지 확인). 사용자가 교수 허락을 받았다고 밝힌 뒤 진행했다.
+  이런 경우 AI 사용 표기에 "담당 교수의 허락을 받아"를 넣고, 그 문구를 넣을지는 사용자가 정하게 알린다.
+- 본인 경험이 재료인 과제는 경험을 지어내지 않는다. 사건·당시 원인 해석·지속성·머릿속 말·감정과 행동·지금의 생각 6가지를 메모로 받고,
+  받지 못한 항목(이번에는 "지금의 생각")은 초안에 쓰되 **제안임을 밝혀 사용자가 고치게** 한다.
+- 강의안이 없어도 수강 화면의 `강의요약`·`주요용어` 캡처면 개념 정의는 충분하다. 교재 쪽수는 알 수 없으므로 쪽수 인용은 하지 않는다.
+- 분량 추정: 표지 양식(좌우 20mm) + 11pt + 17.6pt 고정 줄 간격에서 한 줄 약 45자, 한 쪽 37줄, 표지 블록 약 11줄.
+  본문 4,200자(공백 포함) + 소제목 7개 + 참고문헌 + AI 표기가 약 3.6~3.8쪽으로 계산된다. Quick Look 미리보기는 고정 줄 간격을 반영하지 않아 쪽수 확인에 쓸 수 없다.
+
+## macOS 메모리 정리: RSS가 아니라 footprint로 볼 것 (2026-10-13)
+
+- 스왑이 많이 찬 상태에서는 `ps`의 RSS가 실제 점유를 크게 과소 표시한다(`vis serve` RSS 10MB, 실제 4.8GB).
+  `top -l 1 -o mem -stats pid,command,mem,cmprs`의 MEM(압축·스왑 포함)으로 순위를 매길 것.
+- `vis serve`(vault-intelligence 데몬, 포트 8741)는 유휴 상태에서도 임베딩 모델 때문에 약 4.8GB를 잡는다.
+  `~/.claude/hooks/vis-serve.sh`(SessionStart hook)가 health 실패 시 다시 띄우므로 `kill -TERM`으로 꺼도 된다.
+  종료까지 약 16초 걸렸다(스왑에서 다시 읽어 오기 때문으로 추정).
+- 세션이 띄운 Playwright Chrome은 `browser_close`로 닫으면 프로세스까지 종료된다.
+- 디스크 정리(2026-10-15): `rm`이 `trash` alias라 지워도 공간이 안 생긴다. 반드시 `/bin/rm`을 쓸 것.
+  `uv cache prune`은 Claude 세션의 serena(`uvx`)가 캐시 잠금을 잡고 있어 300초 대기 후 실패한다.
+  세션을 모두 닫고 실행해야 하며, `--force`는 실행 중인 serena 환경을 지울 수 있어 쓰지 않는다.
+  ChatGPT(Codex) 앱은 Sparkle 업데이트 zip을 `~/Library/Caches/com.openai.codex/.../Installation/`에 쌓는다.
+  실행 중인 Autoupdate 시작 시각과 맞지 않는 예전 폴더는 지워도 된다.
+  잠금은 각 세션의 serena(`uv tool uvx ... serena`)가 잡는다. 이 세션 것까지 포함해 serena 프로세스만 TERM하면 세션을 닫지 않고도 prune할 수 있다.
+  prune 결과 "Removed 41.7GiB"였지만 실제 여유 공간은 6.2GB만 늘었다. 로컬 스냅샷은 없었다.
+  macOS에서 uv가 venv에 패키지를 APFS clone으로 설치해 블록을 공유하기 때문으로 보인다.
+  그러니 `du`로 본 uv 캐시 크기를 확보 가능 용량으로 기대하지 말 것.
+
+## weekly-analytics W42: 자동 실행 분석 세션 누수·compaction 요약·자정 분할 (2026-10-17)
+
+- **세 번째 분류 누수: 지난주 `/weekly-claude-analytics` 자동 실행(08:00 시작)이 다음 주 창 첫 세션으로 들어온다.**
+  활성 11분이라 `active_s < 600` meta 임계를 넘어 real로 샜다. 자동 실행 스킬 첫 프롬프트는 활성 시간과 무관하게 meta로 볼 것.
+- **사람 프롬프트 수에서 compaction 요약("This session is being continued…")을 빼야 한다.** W42 311 → 295(16건).
+  W41 526이 같은 기준이었는지는 `/tmp/wk41/`이 사라져 확인 불가 → **파생 스크립트가 /tmp에만 있으면 다음 주 기준 대조가 끊긴다.**
+- `wk_union.py`의 per-day는 블록을 **끝나는 날짜에 통째로 귀속**한다(10-10 21:57→10-11 00:35 블록이 10-11로). 일별 병렬 계수는
+  자정에서 잘라 다시 계산해야 맞는다(`/tmp/wk42/bin/merge.py`).
+- `/model` 전환은 사람 프롬프트에 안 남고 `<local-command-stdout>Set model to … saved as your default` 로그로만 남는다.
+  미커밋 `settings.json` model diff의 출처가 이것이었다. 모델 전환 계기는 이 문자열의 timestamp로 찾을 것.
+- 원격 커밋 메시지의 "언니 폰 업로드" → 휴대폰이 네 번째 실행면(맥·원격 PC·클라우드에 이어). 세션 지표엔 안 잡힌다.
